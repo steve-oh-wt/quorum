@@ -32,7 +32,6 @@ type PermissionCtrl struct {
 	contract       ptype.InitService
 	backend        ptype.Backend
 	useDns         bool
-	isRaft         bool
 	startWaitGroup *sync.WaitGroup // waitgroup to make sure all dependencies are ready before we start the service
 	errorChan      chan error      // channel to capture error when starting aysnc
 }
@@ -63,7 +62,6 @@ func NewQuorumPermissionCtrl(stack *node.Node, pconfig *ptype.PermissionConfig, 
 		startWaitGroup: wg,
 		errorChan:      make(chan error),
 		useDns:         useDns,
-		isRaft:         false,
 		chainID:        chainID,
 	}
 
@@ -127,12 +125,11 @@ func (p *PermissionCtrl) IsV2Permission() bool {
 }
 
 func NewPermissionContractService(ethClnt bind.ContractBackend, permissionV2 bool, key *ecdsa.PrivateKey,
-	permConfig *ptype.PermissionConfig, isRaft, useDns bool, chainId *big.Int) ptype.InitService {
+	permConfig *ptype.PermissionConfig, useDns bool, chainId *big.Int) ptype.InitService {
 	contractBackEnd := ptype.ContractBackend{
 		EthClnt:    ethClnt,
 		Key:        key,
 		PermConfig: permConfig,
-		IsRaft:     isRaft,
 		UseDns:     useDns,
 		ChainID:    chainId,
 	}
@@ -188,7 +185,7 @@ func (p *PermissionCtrl) NewPermissionControlService() (ptype.ControlService, er
 }
 
 func (p *PermissionCtrl) getContractBackend() ptype.ContractBackend {
-	return ptype.ContractBackend{EthClnt: p.ethClnt, Key: p.key, PermConfig: p.permConfig, IsRaft: p.isRaft, UseDns: p.isRaft, ChainID: p.chainID}
+	return ptype.ContractBackend{EthClnt: p.ethClnt, Key: p.key, PermConfig: p.permConfig, UseDns: false /*p.isRaft*/, ChainID: p.chainID}
 }
 
 func (p *PermissionCtrl) ConnectionAllowed(_enodeId, _ip string, _port, _raftPort uint16) (bool, error) {
@@ -237,15 +234,13 @@ func (p *PermissionCtrl) populateBackEnd() error {
 }
 
 func (p *PermissionCtrl) updateBackEnd() {
-	p.contract = NewPermissionContractService(p.ethClnt, p.IsV2Permission(), p.key, p.permConfig, p.isRaft, p.useDns, p.chainID)
+	p.contract = NewPermissionContractService(p.ethClnt, p.IsV2Permission(), p.key, p.permConfig, p.useDns, p.chainID)
 	switch p.IsV2Permission() {
 	case true:
 		p.backend.(*v2.Backend).Contr = p.contract.(*v2.Init)
-		p.backend.(*v2.Backend).Ib.SetIsRaft(p.isRaft)
 
 	default:
 		p.backend.(*v1.Backend).Contr = p.contract.(*v1.Init)
-		p.backend.(*v1.Backend).Ib.SetIsRaft(p.isRaft)
 	}
 }
 

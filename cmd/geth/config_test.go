@@ -514,7 +514,6 @@ BlockPeriod = 5
 ProposerPolicy = "id = 0\n"
 Epoch = 30000
 Ceil2Nby3Block = 0
-TestQBFTBlock = 0
 
 [Node]
 UserIdent = "_custom"

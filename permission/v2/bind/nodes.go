@@ -325,7 +325,6 @@ func (_NodeManager *NodeManagerSession) GetNodeDetailsFromIndex(_nodeIndex *big.
 	EnodeId    string
 	Ip         string
 	Port       uint16
-	Raftport   uint16
 	NodeStatus *big.Int
 }, error) {
 	return _NodeManager.Contract.GetNodeDetailsFromIndex(&_NodeManager.CallOpts, _nodeIndex)

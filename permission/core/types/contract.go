@@ -30,7 +30,6 @@ type ContractBackend struct {
 	EthClnt    bind.ContractBackend
 	Key        *ecdsa.PrivateKey
 	PermConfig *PermissionConfig
-	IsRaft     bool
 	UseDns     bool
 	ChainID    *big.Int
 }

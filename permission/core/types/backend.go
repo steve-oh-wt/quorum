@@ -18,7 +18,6 @@ import (
 	"github.com/ethereum/go-ethereum/node"
 	"github.com/ethereum/go-ethereum/p2p/enode"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/ethereum/go-ethereum/raft"
 )
 
 // supports 2 models of permissions v1 and v2.
@@ -87,24 +86,15 @@ var (
 // backend struct for interfaces
 type InterfaceBackend struct {
 	node    *node.Node
-	isRaft  bool
 	dataDir string
 }
 
-func (i *InterfaceBackend) SetIsRaft(isRaft bool) {
-	i.isRaft = isRaft
-}
-
-func NewInterfaceBackend(node *node.Node, isRaft bool, dataDir string) *InterfaceBackend {
-	return &InterfaceBackend{node: node, isRaft: isRaft, dataDir: dataDir}
+func NewInterfaceBackend(node *node.Node, dataDir string) *InterfaceBackend {
+	return &InterfaceBackend{node: node, dataDir: dataDir}
 }
 
 func (i InterfaceBackend) Node() *node.Node {
 	return i.node
-}
-
-func (i InterfaceBackend) IsRaft() bool {
-	return i.isRaft
 }
 
 func (i InterfaceBackend) DataDir() string {
@@ -219,31 +209,15 @@ func UpdateDisallowedNodes(dataDir, url string, operation NodeOperation) error {
 }
 
 // Disconnect the Node from the network
-func DisconnectNode(node *node.Node, enodeId string, isRaft bool) error {
-	if isRaft {
-		var raftService *raft.RaftService
-		if err := node.Lifecycle(&raftService); err == nil {
-			raftApi := raft.NewPublicRaftAPI(raftService)
-
-			//get the raftId for the given enodeId
-			raftId, err := raftApi.GetRaftId(enodeId)
-			if err == nil {
-				raftApi.RemovePeer(raftId)
-			} else {
-				return err
-			}
-		}
-	} else {
-		// Istanbul  or clique - disconnect the peer
-
-		server := node.Server()
-		if server != nil {
-			node, err := enode.ParseV4(enodeId)
-			if err == nil {
-				server.RemovePeer(node)
-			} else {
-				return err
-			}
+func DisconnectNode(node *node.Node, enodeId string) error {
+	// Istanbul  or clique - disconnect the peer
+	server := node.Server()
+	if server != nil {
+		node, err := enode.ParseV4(enodeId)
+		if err == nil {
+			server.RemovePeer(node)
+		} else {
+			return err
 		}
 	}
 	return nil
@@ -251,7 +225,7 @@ func DisconnectNode(node *node.Node, enodeId string, isRaft bool) error {
 
 // updates Node information in the permissioned-nodes.json file based on Node
 // management activities in smart contract
-func UpdatePermissionedNodes(node *node.Node, dataDir, enodeId string, operation NodeOperation, isRaft bool) error {
+func UpdatePermissionedNodes(node *node.Node, dataDir, enodeId string, operation NodeOperation) error {
 	path := filepath.Join(dataDir, params.PERMISSIONED_CONFIG)
 	if _, err := os.Stat(path); err != nil {
 		return err
@@ -262,7 +236,7 @@ func UpdatePermissionedNodes(node *node.Node, dataDir, enodeId string, operation
 		return err
 	}
 	if operation == NodeDelete {
-		err := DisconnectNode(node, enodeId, isRaft)
+		err := DisconnectNode(node, enodeId)
 		if err != nil {
 			return err
 		}
@@ -324,7 +298,7 @@ func ParsePermissionConfig(dir string) (PermissionConfig, error) {
 }
 
 // returns the enode details
-func GetNodeDetails(url string, isRaft, useDns bool) (string, string, uint16, uint16, error) {
+func GetNodeDetails(url string, useDns bool) (string, string, uint16, uint16, error) {
 	// validate Node id and
 	var ip string
 	if len(url) == 0 {
@@ -336,7 +310,7 @@ func GetNodeDetails(url string, isRaft, useDns bool) (string, string, uint16, ui
 	}
 
 	ip = enodeDet.IP().String()
-	if isRaft && useDns {
+	if /*isRaft &&*/ useDns {
 		if enodeDet.Host() != "" {
 			ip = enodeDet.Host()
 		}

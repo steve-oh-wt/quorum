@@ -26,8 +26,6 @@ import (
 	"github.com/ethereum/go-ethereum/consensus"
 	"github.com/ethereum/go-ethereum/consensus/istanbul"
 	istanbulcommon "github.com/ethereum/go-ethereum/consensus/istanbul/common"
-	ibftcore "github.com/ethereum/go-ethereum/consensus/istanbul/ibft/core"
-	ibftengine "github.com/ethereum/go-ethereum/consensus/istanbul/ibft/engine"
 	qbftcore "github.com/ethereum/go-ethereum/consensus/istanbul/qbft/core"
 	qbftengine "github.com/ethereum/go-ethereum/consensus/istanbul/qbft/engine"
 	qbfttypes "github.com/ethereum/go-ethereum/consensus/istanbul/qbft/types"
@@ -69,7 +67,6 @@ func New(config *istanbul.Config, privateKey *ecdsa.PrivateKey, db ethdb.Databas
 	}
 
 	sb.qbftEngine = qbftengine.NewEngine(sb.config, sb.address, sb.Sign)
-	sb.ibftEngine = ibftengine.NewEngine(sb.config, sb.address, sb.Sign)
 
 	return sb
 }
@@ -84,7 +81,6 @@ type Backend struct {
 
 	core istanbul.Core
 
-	ibftEngine *ibftengine.Engine
 	qbftEngine *qbftengine.Engine
 
 	istanbulEventMux *event.TypeMux
@@ -116,28 +112,15 @@ type Backend struct {
 
 	recentMessages *lru.ARCCache // the cache of peer's messages
 	knownMessages  *lru.ARCCache // the cache of self messages
-
-	qbftConsensusEnabled bool // qbft consensus
 }
 
 func (sb *Backend) Engine() istanbul.Engine {
-	return sb.EngineForBlockNumber(nil)
-}
-
-func (sb *Backend) EngineForBlockNumber(blockNumber *big.Int) istanbul.Engine {
-	switch {
-	case blockNumber != nil && sb.IsQBFTConsensusAt(blockNumber):
-		return sb.qbftEngine
-	case blockNumber == nil && sb.IsQBFTConsensus():
-		return sb.qbftEngine
-	default:
-		return sb.ibftEngine
-	}
+	return sb.qbftEngine
 }
 
 // zekun: HACK
 func (sb *Backend) CalcDifficulty(chain consensus.ChainHeaderReader, time uint64, parent *types.Header) *big.Int {
-	return sb.EngineForBlockNumber(parent.Number).CalcDifficulty(chain, time, parent)
+	return sb.Engine().CalcDifficulty(chain, time, parent)
 }
 
 // Address implements istanbul.Backend.Address
@@ -192,15 +175,11 @@ func (sb *Backend) Gossip(valSet istanbul.ValidatorSet, code uint64, payload []b
 			m.Add(hash, true)
 			sb.recentMessages.Add(addr, m)
 
-			if sb.IsQBFTConsensus() {
-				var outboundCode uint64 = istanbulMsg
-				if _, ok := qbfttypes.MessageCodes()[code]; ok {
-					outboundCode = code
-				}
-				go p.SendQBFTConsensus(outboundCode, payload)
-			} else {
-				go p.SendConsensus(istanbulMsg, payload)
+			var outboundCode uint64 = istanbulMsg
+			if _, ok := qbfttypes.MessageCodes()[code]; ok {
+				outboundCode = code
 			}
+			go p.SendQBFTConsensus(outboundCode, payload)
 		}
 	}
 	return nil
@@ -217,7 +196,7 @@ func (sb *Backend) Commit(proposal istanbul.Proposal, seals [][]byte, round *big
 
 	// Commit header
 	h := block.Header()
-	err = sb.EngineForBlockNumber(h.Number).CommitHeader(h, seals, round)
+	err = sb.Engine().CommitHeader(h, seals, round)
 	if err != nil {
 		return
 	}
@@ -275,7 +254,7 @@ func (sb *Backend) Verify(proposal istanbul.Proposal) (time.Duration, error) {
 		return 0, err
 	}
 
-	return sb.EngineForBlockNumber(header.Number).VerifyBlockProposal(sb.chain, block, snap.ValSet)
+	return sb.Engine().VerifyBlockProposal(sb.chain, block, snap.ValSet)
 }
 
 // Sign implements istanbul.Backend.Sign
@@ -361,44 +340,10 @@ func (sb *Backend) Close() error {
 	return nil
 }
 
-// IsQBFTConsensus returns whether qbft consensus should be used
-func (sb *Backend) IsQBFTConsensus() bool {
-	if sb.qbftConsensusEnabled {
-		return true
-	}
-	if sb.chain != nil {
-		qbftEnabled := sb.IsQBFTConsensusAt(sb.chain.CurrentHeader().Number)
-		sb.qbftConsensusEnabled = qbftEnabled
-		return qbftEnabled
-	}
-	return false
-}
-
-// IsQBFTConsensusForHeader checks if qbft consensus is enabled for the block height identified by the given header
-func (sb *Backend) IsQBFTConsensusAt(blockNumber *big.Int) bool {
-	return sb.config.IsQBFTConsensusAt(blockNumber)
-}
-
-func (sb *Backend) startIBFT() error {
-	sb.logger.Info("BFT: activate IBFT")
-	sb.logger.Trace("BFT: set ProposerPolicy sorter to ValidatorSortByStringFun")
-	sb.config.ProposerPolicy.Use(istanbul.ValidatorSortByString())
-	sb.qbftConsensusEnabled = false
-
-	sb.core = ibftcore.New(sb, sb.config)
-	if err := sb.core.Start(); err != nil {
-		sb.logger.Error("BFT: failed to activate IBFT", "err", err)
-		return err
-	}
-
-	return nil
-}
-
 func (sb *Backend) startQBFT() error {
 	sb.logger.Info("BFT: activate QBFT")
 	sb.logger.Trace("BFT: set ProposerPolicy sorter to ValidatorSortByByteFunc")
 	sb.config.ProposerPolicy.Use(istanbul.ValidatorSortByByte())
-	sb.qbftConsensusEnabled = true
 
 	sb.core = qbftcore.New(sb, sb.config)
 	if err := sb.core.Start(); err != nil {
@@ -421,7 +366,7 @@ func (sb *Backend) stop() error {
 		}
 	}
 
-	sb.qbftConsensusEnabled = false
+	//	sb.qbftConsensusEnabled = false
 
 	return nil
 }

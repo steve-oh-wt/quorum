@@ -349,7 +349,7 @@ func readQLightServerTLSConfig(ctx *cli.Context) *tls.Config {
 }
 
 // quorumValidateEthService checks quorum features that depend on the ethereum service
-func quorumValidateEthService(stack *node.Node, isRaft bool) {
+func quorumValidateEthService(stack *node.Node) {
 	var ethereum *eth.Ethereum
 
 	err := stack.Lifecycle(&ethereum)
@@ -357,18 +357,18 @@ func quorumValidateEthService(stack *node.Node, isRaft bool) {
 		utils.Fatalf("Error retrieving Ethereum service: %v", err)
 	}
 
-	quorumValidateConsensus(ethereum, isRaft)
+	quorumValidateConsensus(ethereum)
 
 	quorumValidatePrivacyEnhancements(ethereum)
 }
 
 // quorumValidateConsensus checks if a consensus was used. The node is killed if consensus was not used
-func quorumValidateConsensus(ethereum *eth.Ethereum, isRaft bool) {
+func quorumValidateConsensus(ethereum *eth.Ethereum) {
 	transitionAlgorithmOnBlockZero := false
 	ethereum.BlockChain().Config().GetTransitionValue(big.NewInt(0), func(transition params.Transition) {
-		transitionAlgorithmOnBlockZero = strings.EqualFold(transition.Algorithm, params.IBFT) || strings.EqualFold(transition.Algorithm, params.QBFT)
+		transitionAlgorithmOnBlockZero = strings.EqualFold(transition.Algorithm, params.QBFT)
 	})
-	if !transitionAlgorithmOnBlockZero && !isRaft && ethereum.BlockChain().Config().Istanbul == nil && ethereum.BlockChain().Config().IBFT == nil && ethereum.BlockChain().Config().QBFT == nil && ethereum.BlockChain().Config().Clique == nil {
+	if !transitionAlgorithmOnBlockZero && ethereum.BlockChain().Config().Istanbul == nil && ethereum.BlockChain().Config().QBFT == nil && ethereum.BlockChain().Config().Clique == nil {
 		utils.Fatalf("Consensus not specified. Exiting!!")
 	}
 }

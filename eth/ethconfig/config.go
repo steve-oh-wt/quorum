@@ -23,7 +23,6 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -36,7 +35,6 @@ import (
 	"github.com/ethereum/go-ethereum/eth/downloader"
 	"github.com/ethereum/go-ethereum/eth/gasprice"
 	"github.com/ethereum/go-ethereum/ethdb"
-	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/miner"
 	"github.com/ethereum/go-ethereum/node"
 	"github.com/ethereum/go-ethereum/params"
@@ -235,64 +233,9 @@ func CreateConsensusEngine(stack *node.Node, chainConfig *params.ChainConfig, co
 		chainConfig.Clique.AllowedFutureBlockTime = config.Miner.AllowedFutureBlockTime //Quorum
 		return clique.New(chainConfig.Clique, db)
 	}
-	if len(chainConfig.Transitions) > 0 {
-		config.Istanbul.Transitions = chainConfig.Transitions
-	}
-	// If Istanbul is requested, set it up
-	if chainConfig.Istanbul != nil {
-		log.Warn("WARNING: The attribute config.istanbul is deprecated and will be removed in the future, please use config.ibft on genesis file")
-		if chainConfig.Istanbul.Epoch != 0 {
-			config.Istanbul.Epoch = chainConfig.Istanbul.Epoch
-		}
-		config.Istanbul.ProposerPolicy = istanbul.NewProposerPolicy(istanbul.ProposerPolicyId(chainConfig.Istanbul.ProposerPolicy))
-		config.Istanbul.Ceil2Nby3Block = chainConfig.Istanbul.Ceil2Nby3Block
-		config.Istanbul.AllowedFutureBlockTime = config.Miner.AllowedFutureBlockTime //Quorum
-		config.Istanbul.TestQBFTBlock = chainConfig.Istanbul.TestQBFTBlock
-		return istanbulBackend.New(&config.Istanbul, stack.GetNodeKey(), db)
-	}
-	if chainConfig.IBFT == nil && len(chainConfig.Transitions) > 0 {
-		chainConfig.GetTransitionValue(big.NewInt(0), func(t params.Transition) {
-			if strings.EqualFold(t.Algorithm, params.IBFT) {
-				chainConfig.IBFT = &params.IBFTConfig{
-					BFTConfig: &params.BFTConfig{
-						EpochLength:              t.EpochLength,
-						BlockPeriodSeconds:       t.BlockPeriodSeconds,
-						EmptyBlockPeriodSeconds:  t.EmptyBlockPeriodSeconds,
-						ValidatorContractAddress: t.ValidatorContractAddress,
-						RequestTimeoutSeconds:    t.RequestTimeoutSeconds,
-					},
-				}
-				log.Info("new chain config with", "ibft", *chainConfig.IBFT)
-			}
-		})
-	}
-	if chainConfig.IBFT != nil {
-		setBFTConfig(&config.Istanbul, chainConfig.IBFT.BFTConfig)
-		config.Istanbul.TestQBFTBlock = nil
-		if chainConfig.IBFT.ValidatorContractAddress != (common.Address{}) {
-			config.Istanbul.ValidatorContract = chainConfig.IBFT.ValidatorContractAddress
-		}
-		return istanbulBackend.New(&config.Istanbul, stack.GetNodeKey(), db)
-	}
-	if chainConfig.QBFT == nil && len(chainConfig.Transitions) > 0 {
-		chainConfig.GetTransitionValue(big.NewInt(0), func(t params.Transition) {
-			if strings.EqualFold(t.Algorithm, params.QBFT) {
-				chainConfig.QBFT = &params.QBFTConfig{
-					BFTConfig: &params.BFTConfig{
-						EpochLength:              t.EpochLength,
-						BlockPeriodSeconds:       t.BlockPeriodSeconds,
-						EmptyBlockPeriodSeconds:  t.EmptyBlockPeriodSeconds,
-						ValidatorContractAddress: t.ValidatorContractAddress,
-						RequestTimeoutSeconds:    t.RequestTimeoutSeconds,
-					},
-				}
-				log.Info("new chain config with", "qbft", *chainConfig.QBFT)
-			}
-		})
-	}
+
 	if chainConfig.QBFT != nil {
 		setBFTConfig(&config.Istanbul, chainConfig.QBFT.BFTConfig)
-		config.Istanbul.TestQBFTBlock = big.NewInt(0)
 		if chainConfig.QBFT.ValidatorContractAddress != (common.Address{}) {
 			config.Istanbul.ValidatorContract = chainConfig.QBFT.ValidatorContractAddress
 		}

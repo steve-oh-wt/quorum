@@ -77,7 +77,6 @@ import (
 	"github.com/ethereum/go-ethereum/permission/core/types"
 	"github.com/ethereum/go-ethereum/plugin"
 	"github.com/ethereum/go-ethereum/private"
-	"github.com/ethereum/go-ethereum/raft"
 	pcsclite "github.com/gballet/go-libpcsclite"
 	gopsutil "github.com/shirou/gopsutil/mem"
 	"gopkg.in/urfave/cli.v1"
@@ -2334,54 +2333,6 @@ func RegisterPermissionService(stack *node.Node, useDns bool, chainID *big.Int) 
 	log.Info("permission service registered")
 }
 
-func RegisterRaftService(stack *node.Node, ctx *cli.Context, nodeCfg *node.Config, ethService *eth.Ethereum) {
-	blockTimeMillis := ctx.GlobalInt(RaftBlockTimeFlag.Name)
-	raftLogDir := nodeCfg.RaftLogDir // default value is set either 'datadir' or 'raftlogdir'
-	joinExistingId := ctx.GlobalInt(RaftJoinExistingFlag.Name)
-	useDns := ctx.GlobalBool(RaftDNSEnabledFlag.Name)
-	raftPort := uint16(ctx.GlobalInt(RaftPortFlag.Name))
-
-	privkey := nodeCfg.NodeKey()
-	strId := enode.PubkeyToIDV4(&privkey.PublicKey).String()
-	blockTimeNanos := time.Duration(blockTimeMillis) * time.Millisecond
-	peers := nodeCfg.StaticNodes()
-
-	var myId uint16
-	var joinExisting bool
-
-	if joinExistingId > 0 {
-		myId = uint16(joinExistingId)
-		joinExisting = true
-	} else if len(peers) == 0 {
-		Fatalf("Raft-based consensus requires either (1) an initial peers list (in static-nodes.json) including this enode hash (%v), or (2) the flag --raftjoinexisting RAFT_ID, where RAFT_ID has been issued by an existing cluster member calling `raft.addPeer(ENODE_ID)` with an enode ID containing this node's enode hash.", strId)
-	} else {
-		peerIds := make([]string, len(peers))
-
-		for peerIdx, peer := range peers {
-			if !peer.HasRaftPort() {
-				Fatalf("raftport querystring parameter not specified in static-node enode ID: %v. please check your static-nodes.json file.", peer.String())
-			}
-
-			peerId := peer.ID().String()
-			peerIds[peerIdx] = peerId
-			if peerId == strId {
-				myId = uint16(peerIdx) + 1
-			}
-		}
-
-		if myId == 0 {
-			Fatalf("failed to find local enode ID (%v) amongst peer IDs: %v", strId, peerIds)
-		}
-	}
-
-	_, err := raft.New(stack, ethService.BlockChain().Config(), myId, raftPort, joinExisting, blockTimeNanos, ethService, peers, raftLogDir, useDns)
-	if err != nil {
-		Fatalf("raft: Failed to register the Raft service: %v", err)
-	}
-
-	log.Info("raft service registered")
-}
-
 func RegisterExtensionService(stack *node.Node, ethService *eth.Ethereum) {
 	_, err := extension.NewServicesFactory(stack, private.P, ethService)
 	if err != nil {
@@ -2501,13 +2452,10 @@ func MakeChain(ctx *cli.Context, stack *node.Node, useExist bool) (chain *core.B
 		Fatalf("Failed to attach to self: %v", err)
 	}
 	// Lazy logic
-	if config.Clique == nil && config.QBFT == nil && config.IBFT == nil && config.Istanbul == nil {
+	if config.Clique == nil && config.QBFT == nil && config.Istanbul == nil {
 		config.GetTransitionValue(big.NewInt(0), func(t params.Transition) {
 			if strings.EqualFold(t.Algorithm, params.QBFT) {
 				config.QBFT = &params.QBFTConfig{}
-			}
-			if strings.EqualFold(t.Algorithm, params.IBFT) {
-				config.IBFT = &params.IBFTConfig{}
 			}
 		})
 	}
@@ -2522,22 +2470,14 @@ func MakeChain(ctx *cli.Context, stack *node.Node, useExist bool) (chain *core.B
 		}
 		istanbulConfig.ProposerPolicy = istanbul.NewProposerPolicy(istanbul.ProposerPolicyId(config.Istanbul.ProposerPolicy))
 		istanbulConfig.Ceil2Nby3Block = config.Istanbul.Ceil2Nby3Block
-		istanbulConfig.TestQBFTBlock = config.Istanbul.TestQBFTBlock
 		istanbulConfig.Transitions = config.Transitions
 		istanbulConfig.Client = ethclient.NewClient(client)
 		engine = istanbulBackend.New(istanbulConfig, stack.GetNodeKey(), chainDb)
-	} else if config.IBFT != nil {
-		ibftConfig := setBFTConfig(config.IBFT.BFTConfig)
-		ibftConfig.TestQBFTBlock = nil
-		ibftConfig.Transitions = config.Transitions
-		ibftConfig.Client = ethclient.NewClient(client)
-		engine = istanbulBackend.New(ibftConfig, stack.GetNodeKey(), chainDb)
 	} else if config.QBFT != nil {
 		qbftConfig := setBFTConfig(config.QBFT.BFTConfig)
 		qbftConfig.BlockReward = config.QBFT.BlockReward
 		qbftConfig.BeneficiaryMode = config.QBFT.BeneficiaryMode     // beneficiary mode: list, besu, validators
 		qbftConfig.MiningBeneficiary = config.QBFT.MiningBeneficiary // auto (undefined mode) and besu mode
-		qbftConfig.TestQBFTBlock = big.NewInt(0)
 		qbftConfig.Transitions = config.Transitions
 		qbftConfig.ValidatorContract = config.QBFT.ValidatorContractAddress
 		qbftConfig.ValidatorSelectionMode = config.QBFT.ValidatorSelectionMode

@@ -105,7 +105,6 @@ func (p *PermissionCtrl) asyncStart() {
 	}
 	p.ethClnt = ethclient.NewClient(client)
 	p.eth = ethereum
-	p.isRaft = p.eth.BlockChain().Config().Istanbul == nil && p.eth.BlockChain().Config().IBFT == nil && p.eth.BlockChain().Config().QBFT == nil && p.eth.BlockChain().Config().Clique == nil
 	p.updateBackEnd()
 }
 
@@ -282,7 +281,7 @@ func (p *PermissionCtrl) populateOrgsFromContract() error {
 func (p *PermissionCtrl) populateStaticNodesToContract() error {
 	nodes := p.node.Server().Config.StaticNodes
 	for _, node := range nodes {
-		url := pcore.GetNodeUrl(node.EnodeID(), node.IP().String(), uint16(node.TCP()), uint16(node.RaftPort()), p.isRaft)
+		url := pcore.GetNodeUrl(node.EnodeID(), node.IP().String(), uint16(node.TCP()), uint16(node.RaftPort()))
 		_, err := p.contract.AddAdminNode(url)
 		if err != nil {
 			log.Warn("Failed to propose node", "err", err, "enode", node.EnodeID())

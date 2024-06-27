@@ -1590,20 +1590,10 @@ func (bc *BlockChain) WriteBlockWithState(block *types.Block, receipts []*types.
 	return bc.writeBlockWithState(block, receipts, logs, state, psManager, emitHeadEvent)
 }
 
-// QUORUM
-// checks if the consensus engine is Rfat
-func (bc *BlockChain) isRaft() bool {
-	return bc.chainConfig.IsQuorum && bc.chainConfig.Istanbul == nil && bc.chainConfig.IBFT == nil && bc.chainConfig.QBFT == nil && bc.chainConfig.Clique == nil
-}
-
 // function specifically added for Raft consensus. This is called from mintNewBlock
 // to commit public and private state using bc.chainmu lock
 // added to avoid concurrent map errors in high stress conditions
 func (bc *BlockChain) CommitBlockWithState(deleteEmptyObjects bool, state, privateState *state.StateDB) error {
-	// check if consensus is not Raft
-	if !bc.isRaft() {
-		return errors.New("error function can be called only for Raft consensus")
-	}
 	bc.chainmu.Lock()
 	defer bc.chainmu.Unlock()
 	if _, err := state.Commit(deleteEmptyObjects); err != nil {
@@ -1860,11 +1850,6 @@ func (bc *BlockChain) insertChain(chain types.Blocks, verifySeals bool) (int, er
 	// If the chain is terminating, don't even bother starting up
 	if atomic.LoadInt32(&bc.procInterrupt) == 1 {
 		log.Debug("Premature abort during blocks processing")
-		// QUORUM
-		if bc.isRaft() {
-			// Only returns an error for raft mode
-			return 0, ErrAbortBlocksProcessing
-		}
 		return 0, nil
 	}
 	// Start a parallel signature recovery (signer will fluke on fork transition, minimal perf loss)
@@ -1981,12 +1966,6 @@ func (bc *BlockChain) insertChain(chain types.Blocks, verifySeals bool) (int, er
 		// If the chain is terminating, stop processing blocks
 		if bc.insertStopped() {
 			log.Debug("Abort during block processing")
-			// QUORUM
-			if bc.isRaft() {
-				// Only returns an error for raft mode
-				return it.index, ErrAbortBlocksProcessing
-			}
-			// END QUORUM
 			break
 		}
 		// If the header is a banned one, straight out abort

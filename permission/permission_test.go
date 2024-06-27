@@ -416,7 +416,7 @@ func TestQuorumControlsAPI_NodeAPIs(t *testing.T) {
 	invalidTxa := ethapi.SendTxArgs{From: getArbitraryAccount()}
 	txa := ethapi.SendTxArgs{From: guardianAddress}
 
-	testObject.permCtrl.isRaft = true
+	//	testObject.permCtrl.isRaft = true
 	_, err := testObject.AddNode(arbitraryNetworkAdminOrg, arbitraryNode2, invalidTxa)
 	assert.Equal(t, err, errors.New("Invalid account id"))
 	testConnectionAllowed(t, testObject, arbitraryNode2, false)
@@ -466,7 +466,7 @@ func TestQuorumControlsAPI_NodeAPIs(t *testing.T) {
 	assert.NoError(t, err)
 	pcore.NodeInfoMap.UpsertNode(arbitraryNetworkAdminOrg, arbitraryNode3, pcore.NodeApproved)
 
-	testObject.permCtrl.isRaft = true
+	//	testObject.permCtrl.isRaft = true
 	_, err = testObject.AddNode(arbitraryNetworkAdminOrg, arbitraryNode4withHostName, txa)
 	assert.Equal(t, err, ptype.ErrHostNameNotSupported)
 

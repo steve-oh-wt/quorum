@@ -42,7 +42,6 @@ func newBlockchainFromConfig(genesis *core.Genesis, nodeKeys []*ecdsa.PrivateKey
 	// Use the first key as private key
 	backend := New(cfg, nodeKeys[0], memDB)
 
-	backend.qbftConsensusEnabled = backend.IsQBFTConsensus()
 	genesis.MustCommit(memDB)
 
 	blockchain, err := core.NewBlockChain(memDB, nil, genesis.Config, backend, vm.Config{}, nil, nil, nil)
@@ -82,8 +81,6 @@ func newBlockChain(n int, qbftBlock *big.Int) (*core.BlockChain, *Backend) {
 
 	config := copyConfig(istanbul.DefaultConfig)
 
-	config.TestQBFTBlock = qbftBlock
-
 	return newBlockchainFromConfig(genesis, nodeKeys, config)
 }
 
@@ -121,22 +118,6 @@ func makeBlockWithoutSeal(chain *core.BlockChain, engine *Backend, parent *types
 	state, _, _ := chain.StateAt(parent.Root())
 	block, _ := engine.FinalizeAndAssemble(chain, header, state, nil, nil, nil)
 	return block
-}
-
-func TestIBFTPrepare(t *testing.T) {
-	chain, engine := newBlockChain(1, nil)
-	defer engine.Stop()
-	chain.Config().Istanbul.TestQBFTBlock = nil
-	header := makeHeader(chain.Genesis(), engine.config)
-	err := engine.Prepare(chain, header)
-	if err != nil {
-		t.Errorf("error mismatch: have %v, want nil", err)
-	}
-	header.ParentHash = common.StringToHash("1234567890")
-	err = engine.Prepare(chain, header)
-	if err != consensus.ErrUnknownAncestor {
-		t.Errorf("error mismatch: have %v, want %v", err, consensus.ErrUnknownAncestor)
-	}
 }
 
 func TestQBFTPrepare(t *testing.T) {

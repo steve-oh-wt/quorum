@@ -202,7 +202,7 @@ func (b *Backend) ManageNodePermissions() error {
 		for {
 			select {
 			case evtNodeApproved := <-chNodeApproved:
-				err := ptype.UpdatePermissionedNodes(b.Ib.Node(), b.Ib.DataDir(), evtNodeApproved.EnodeId, ptype.NodeAdd, b.Ib.IsRaft())
+				err := ptype.UpdatePermissionedNodes(b.Ib.Node(), b.Ib.DataDir(), evtNodeApproved.EnodeId, ptype.NodeAdd)
 				if err != nil {
 					log.Error("error updating permissioned-nodes.json", "err", err)
 				}
@@ -212,14 +212,14 @@ func (b *Backend) ManageNodePermissions() error {
 				core.NodeInfoMap.UpsertNode(evtNodeProposed.OrgId, evtNodeProposed.EnodeId, core.NodePendingApproval)
 
 			case evtNodeDeactivated := <-chNodeDeactivated:
-				err := ptype.UpdatePermissionedNodes(b.Ib.Node(), b.Ib.DataDir(), evtNodeDeactivated.EnodeId, ptype.NodeDelete, b.Ib.IsRaft())
+				err := ptype.UpdatePermissionedNodes(b.Ib.Node(), b.Ib.DataDir(), evtNodeDeactivated.EnodeId, ptype.NodeDelete)
 				if err != nil {
 					log.Error("error updating permissioned-nodes.json", "err", err)
 				}
 				core.NodeInfoMap.UpsertNode(evtNodeDeactivated.OrgId, evtNodeDeactivated.EnodeId, core.NodeDeactivated)
 
 			case evtNodeActivated := <-chNodeActivated:
-				err := ptype.UpdatePermissionedNodes(b.Ib.Node(), b.Ib.DataDir(), evtNodeActivated.EnodeId, ptype.NodeAdd, b.Ib.IsRaft())
+				err := ptype.UpdatePermissionedNodes(b.Ib.Node(), b.Ib.DataDir(), evtNodeActivated.EnodeId, ptype.NodeAdd)
 				if err != nil {
 					log.Error("error updating permissioned-nodes.json", "err", err)
 				}
@@ -229,7 +229,7 @@ func (b *Backend) ManageNodePermissions() error {
 				core.NodeInfoMap.UpsertNode(evtNodeBlacklisted.OrgId, evtNodeBlacklisted.EnodeId, core.NodeBlackListed)
 				err := ptype.UpdateDisallowedNodes(b.Ib.DataDir(), evtNodeBlacklisted.EnodeId, ptype.NodeAdd)
 				log.Error("error updating disallowed-nodes.json", "err", err)
-				err = ptype.UpdatePermissionedNodes(b.Ib.Node(), b.Ib.DataDir(), evtNodeBlacklisted.EnodeId, ptype.NodeDelete, b.Ib.IsRaft())
+				err = ptype.UpdatePermissionedNodes(b.Ib.Node(), b.Ib.DataDir(), evtNodeBlacklisted.EnodeId, ptype.NodeDelete)
 				if err != nil {
 					log.Error("error updating permissioned-nodes.json", "err", err)
 				}
