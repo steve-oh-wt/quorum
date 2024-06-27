@@ -158,12 +158,6 @@ var (
 		// Quorum
 		utils.QuorumImmutabilityThreshold,
 		utils.EnableNodePermissionFlag,
-		utils.RaftLogDirFlag,
-		utils.RaftModeFlag,
-		utils.RaftBlockTimeFlag,
-		utils.RaftJoinExistingFlag,
-		utils.RaftPortFlag,
-		utils.RaftDNSEnabledFlag,
 		utils.EmitCheckpointsFlag,
 		utils.IstanbulRequestTimeoutFlag,
 		utils.IstanbulBlockPeriodFlag,

@@ -25,7 +25,6 @@ import (
 func TestFlagsConfig(t *testing.T) {
 	flags := []interface{}{
 		utils.DataDirFlag,
-		utils.RaftLogDirFlag,
 		utils.AncientFlag,
 		utils.MinFreeDiskSpaceFlag,
 		utils.KeyStoreDirFlag,
@@ -168,11 +167,7 @@ func TestFlagsConfig(t *testing.T) {
 		utils.EVMInterpreterFlag,
 		utils.EVMCallTimeOutFlag,
 		utils.QuorumImmutabilityThreshold,
-		utils.RaftModeFlag,
-		utils.RaftBlockTimeFlag,
-		utils.RaftJoinExistingFlag,
 		utils.EmitCheckpointsFlag,
-		utils.RaftPortFlag,
 		utils.RaftDNSEnabledFlag,
 		utils.EnableNodePermissionFlag,
 		utils.AllowedFutureBlockTimeFlag,

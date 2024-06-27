@@ -214,11 +214,7 @@ func makeFullNode(ctx *cli.Context) (*node.Node, ethapi.Backend) {
 	}
 
 	if cfg.Node.IsPermissionEnabled() {
-		utils.RegisterPermissionService(stack, ctx.Bool(utils.RaftDNSEnabledFlag.Name), backend.ChainConfig().ChainID)
-	}
-
-	if ctx.GlobalBool(utils.RaftModeFlag.Name) && !cfg.Eth.QuorumLightClient.Enabled() {
-		utils.RegisterRaftService(stack, ctx, &cfg.Node, eth)
+		utils.RegisterPermissionService(stack, false, backend.ChainConfig().ChainID)
 	}
 
 	if private.IsQuorumPrivacyEnabled() {

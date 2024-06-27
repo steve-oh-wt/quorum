@@ -312,16 +312,6 @@ var AppHelpFlagGroups = []flags.FlagGroup{
 		},
 	},
 	{
-		Name: "RAFT",
-		Flags: []cli.Flag{
-			utils.RaftModeFlag,
-			utils.RaftBlockTimeFlag,
-			utils.RaftJoinExistingFlag,
-			utils.RaftPortFlag,
-			utils.RaftDNSEnabledFlag,
-		},
-	},
-	{
 		Name: "ISTANBUL",
 		Flags: []cli.Flag{
 			utils.IstanbulRequestTimeoutFlag,

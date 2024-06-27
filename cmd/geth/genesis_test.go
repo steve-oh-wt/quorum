@@ -99,7 +99,6 @@ func TestCustomGenesis(t *testing.T) {
 		geth := runGeth(t, "--networkid", "1337", "--syncmode=full",
 			"--datadir", datadir, "--maxpeers", "0", "--port", "0",
 			"--nodiscover", "--nat", "none", "--ipcdisable",
-			"--raft",
 			"--exec", tt.query, "console")
 		geth.ExpectRegexp(tt.result)
 		geth.ExpectExit()

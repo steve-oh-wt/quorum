@@ -124,11 +124,6 @@ var (
 		Usage: "Data directory for the databases and keystore",
 		Value: DirectoryString(node.DefaultDataDir()),
 	}
-	RaftLogDirFlag = DirectoryFlag{
-		Name:  "raftlogdir",
-		Usage: "Raft log directory for the raft-state, raft-snap and raft-wal folders",
-		Value: DirectoryString(node.DefaultDataDir()),
-	}
 	AncientFlag = DirectoryFlag{
 		Name:  "datadir.ancient",
 		Usage: "Data directory for ancient chain segments (default = inside chaindata)",
@@ -819,34 +814,10 @@ var (
 		Usage: "overrides the default immutability threshold for Quorum nodes. Its the threshold beyond which block data will be moved to ancient db",
 		Value: 3162240,
 	}
-	// Raft flags
-	RaftModeFlag = cli.BoolFlag{
-		Name:  "raft",
-		Usage: "If enabled, uses Raft instead of Quorum Chain for consensus",
-	}
-	RaftBlockTimeFlag = cli.IntFlag{
-		Name:  "raftblocktime",
-		Usage: "Amount of time between raft block creations in milliseconds",
-		Value: 50,
-	}
-	RaftJoinExistingFlag = cli.IntFlag{
-		Name:  "raftjoinexisting",
-		Usage: "The raft ID to assume when joining an pre-existing cluster",
-		Value: 0,
-	}
 
 	EmitCheckpointsFlag = cli.BoolFlag{
 		Name:  "emitcheckpoints",
 		Usage: "If enabled, emit specially formatted logging checkpoints",
-	}
-	RaftPortFlag = cli.IntFlag{
-		Name:  "raftport",
-		Usage: "The port to bind for the raft transport",
-		Value: 50400,
-	}
-	RaftDNSEnabledFlag = cli.BoolFlag{
-		Name:  "raftdnsenable",
-		Usage: "Enable DNS resolution of peers",
 	}
 
 	// Permission
@@ -1549,7 +1520,6 @@ func SetNodeConfig(ctx *cli.Context, cfg *node.Config) {
 	setWS(ctx, cfg)
 	setNodeUserIdent(ctx, cfg)
 	setDataDir(ctx, cfg)
-	setRaftLogDir(ctx, cfg)
 	setSmartCard(ctx, cfg)
 
 	if ctx.GlobalIsSet(ExternalSignerFlag.Name) {
@@ -1628,14 +1598,6 @@ func setDataDir(ctx *cli.Context, cfg *node.Config) {
 	}
 	if err := SetPlugins(ctx, cfg); err != nil {
 		Fatalf(err.Error())
-	}
-}
-
-func setRaftLogDir(ctx *cli.Context, cfg *node.Config) {
-	if ctx.GlobalIsSet(RaftLogDirFlag.Name) {
-		cfg.RaftLogDir = ctx.GlobalString(RaftLogDirFlag.Name)
-	} else {
-		cfg.RaftLogDir = cfg.DataDir
 	}
 }
 
@@ -1838,17 +1800,12 @@ func setIstanbul(ctx *cli.Context, cfg *eth.Config) {
 	}
 }
 
-func setRaft(ctx *cli.Context, cfg *eth.Config) {
-	cfg.RaftMode = ctx.GlobalBool(RaftModeFlag.Name)
-}
-
 func setQuorumConfig(ctx *cli.Context, cfg *eth.Config) error {
 	cfg.EVMCallTimeOut = time.Duration(ctx.GlobalInt(EVMCallTimeOutFlag.Name)) * time.Second
 	cfg.QuorumChainConfig = core.NewQuorumChainConfig(ctx.GlobalBool(MultitenancyFlag.Name),
 		ctx.GlobalBool(RevertReasonFlag.Name), ctx.GlobalBool(QuorumEnablePrivacyMarker.Name),
 		ctx.GlobalBool(QuorumEnablePrivateTrieCache.Name))
 	setIstanbul(ctx, cfg)
-	setRaft(ctx, cfg)
 	return nil
 }
 

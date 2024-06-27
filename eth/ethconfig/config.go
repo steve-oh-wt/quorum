@@ -209,8 +209,6 @@ type Config struct {
 	OverrideBerlin *big.Int `toml:",omitempty"`
 
 	// Quorum
-
-	RaftMode             bool
 	EnableNodePermission bool
 	// Istanbul options
 	Istanbul istanbul.Config
