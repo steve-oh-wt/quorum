@@ -18,7 +18,6 @@ package backend
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"math/big"
 	"testing"
@@ -41,7 +40,7 @@ func TestIstanbulMessage(t *testing.T) {
 	data := []byte("data1")
 	hash := istanbul.RLPHash(data)
 	msg := makeMsg(istanbulMsg, data)
-	addr := common.StringToAddress("address")
+	addr := common.BytesToAddress([]byte("address"))
 
 	// 1. this message should not be in cache
 	// for peers
@@ -93,7 +92,7 @@ func tryUntilMessageIsHandled(backend *Backend, arbitraryAddress common.Address,
 func TestHandleNewBlockMessage_whenTypical(t *testing.T) {
 	_, backend := newBlockChain(1)
 	defer backend.Stop()
-	arbitraryAddress := common.StringToAddress("arbitrary")
+	arbitraryAddress := common.BytesToAddress([]byte("arbitrary"))
 	arbitraryBlock, arbitraryP2PMessage := buildArbitraryP2PNewBlockMessage(t, false)
 	postAndWait(backend, arbitraryBlock, t)
 
@@ -110,16 +109,17 @@ func TestHandleNewBlockMessage_whenTypical(t *testing.T) {
 }
 
 func TestHandleNewBlockMessage_whenNotAProposedBlock(t *testing.T) {
-	_, backend := newBlockChain(1)
-
+	bc, backend := newBlockChain(1)
 	defer backend.Stop()
-	arbitraryAddress := common.StringToAddress("arbitrary")
+
+	arbitraryAddress := common.BytesToAddress([]byte("arbitrary"))
 	_, arbitraryP2PMessage := buildArbitraryP2PNewBlockMessage(t, false)
 	postAndWait(backend, types.NewBlock(&types.Header{
-		Number:    big.NewInt(1),
-		Root:      common.StringToHash("someroot"),
-		GasLimit:  1,
-		MixDigest: types.IstanbulDigest,
+		Number:     big.NewInt(1),
+		ParentHash: bc.Genesis().Hash(),
+		Root:       common.StringToHash("someroot"),
+		GasLimit:   1,
+		MixDigest:  types.IstanbulDigest,
 	}, nil, nil, nil, new(trie.Trie)), t)
 
 	handled, err := tryUntilMessageIsHandled(backend, arbitraryAddress, arbitraryP2PMessage)
@@ -135,14 +135,16 @@ func TestHandleNewBlockMessage_whenNotAProposedBlock(t *testing.T) {
 }
 
 func TestHandleNewBlockMessage_whenFailToDecode(t *testing.T) {
-	_, backend := newBlockChain(1)
+	bc, backend := newBlockChain(1)
 	defer backend.Stop()
-	arbitraryAddress := common.StringToAddress("arbitrary")
+
+	arbitraryAddress := common.BytesToAddress([]byte("arbitrary"))
 	_, arbitraryP2PMessage := buildArbitraryP2PNewBlockMessage(t, true)
 	postAndWait(backend, types.NewBlock(&types.Header{
-		Number:    big.NewInt(1),
-		GasLimit:  1,
-		MixDigest: types.IstanbulDigest,
+		Number:     big.NewInt(1),
+		ParentHash: bc.Genesis().Hash(),
+		GasLimit:   1,
+		MixDigest:  types.IstanbulDigest,
 	}, nil, nil, nil, new(trie.Trie)), t)
 
 	handled, err := tryUntilMessageIsHandled(backend, arbitraryAddress, arbitraryP2PMessage)
@@ -171,8 +173,6 @@ func postAndWait(backend *Backend, block *types.Block, t *testing.T) {
 	}); err != nil {
 		t.Fatalf("%s", err)
 	}
-
-	fmt.Println("postAndWait", block.Number(), block.ParentHash())
 	<-stop
 }
 

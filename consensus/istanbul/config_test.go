@@ -129,7 +129,7 @@ func TestGetValidatorContractAddress(t *testing.T) {
 
 	for _, test := range tests {
 		c := config.GetValidatorContractAddress(big.NewInt(test.blockNumber))
-		if !reflect.DeepEqual(c, test.expectedAddress) {
+		if c != test.expectedAddress {
 			t.Errorf("error mismatch:\nexpected: %v\ngot: %v\n", test.expectedAddress, c)
 		}
 	}

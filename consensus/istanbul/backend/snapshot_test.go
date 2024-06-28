@@ -352,10 +352,7 @@ func TestVoting(t *testing.T) {
 				Difficulty: istanbulcommon.DefaultDifficulty,
 				MixDigest:  types.IstanbulDigest,
 			}
-			_ = qbftengine.ApplyHeaderQBFTExtra(
-				headers[j],
-				qbftengine.WriteValidators(validators),
-			)
+			_ = qbftengine.ApplyHeaderQBFTExtra(headers[j], qbftengine.WriteValidators(validators))
 
 			if j > 0 {
 				headers[j].ParentHash = headers[j-1].Hash()
@@ -413,21 +410,21 @@ func TestSaveAndLoad(t *testing.T) {
 		Hash:   common.HexToHash("1234567890"),
 		Votes: []*Vote{
 			{
-				Validator: common.StringToAddress("1234567891"),
+				Validator: common.BytesToAddress([]byte("1234567891")),
 				Block:     15,
-				Address:   common.StringToAddress("1234567892"),
+				Address:   common.BytesToAddress([]byte("1234567892")),
 				Authorize: false,
 			},
 		},
 		Tally: map[common.Address]Tally{
-			common.StringToAddress("1234567893"): {
+			common.BytesToAddress([]byte("1234567893")): {
 				Authorize: false,
 				Votes:     20,
 			},
 		},
 		ValSet: validator.NewSet([]common.Address{
-			common.StringToAddress("1234567894"),
-			common.StringToAddress("1234567895"),
+			common.BytesToAddress([]byte("1234567894")),
+			common.BytesToAddress([]byte("1234567895")),
 		}, istanbul.NewRoundRobinProposerPolicy()),
 	}
 	db := rawdb.NewMemoryDatabase()
