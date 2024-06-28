@@ -66,7 +66,6 @@ func newQLightServerHandler(config *handlerConfig) (*handler, error) {
 		authorizationList:        config.AuthorizationList,
 		txsyncCh:                 make(chan *txsync),
 		quitSync:                 make(chan struct{}),
-		raftMode:                 config.RaftMode,
 		engine:                   config.Engine,
 		authProvider:             config.authProvider,
 		privateBlockDataResolver: config.privateBlockDataResolver,

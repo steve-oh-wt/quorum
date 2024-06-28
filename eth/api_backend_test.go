@@ -9,9 +9,7 @@ import (
 )
 
 func TestEthAPIBackend_SubscribePendingLogsEvent(t *testing.T) {
-	conf := &Config{
-		RaftMode: false,
-	}
+	conf := &Config{}
 	stack, err := node.New(&node.Config{})
 	if err != nil {
 		t.Fatalf("failed to create node, err = %v", err)
@@ -36,9 +34,7 @@ func TestEthAPIBackend_SubscribePendingLogsEvent(t *testing.T) {
 }
 
 func TestEthAPIBackend_SubscribePendingLogsEvent_SubscribesToConsensusServiceFeed(t *testing.T) {
-	conf := &Config{
-		RaftMode: true,
-	}
+	conf := &Config{}
 	stack, err := node.New(&node.Config{})
 	if err != nil {
 		t.Fatalf("failed to create node, err = %v", err)

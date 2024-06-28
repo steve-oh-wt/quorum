@@ -103,8 +103,7 @@ type handlerConfig struct {
 	// Quorum
 	AuthorizationList map[uint64]common.Hash // Hard coded authorization list for sync challenged
 
-	Engine   consensus.Engine
-	RaftMode bool
+	Engine consensus.Engine
 
 	// Quorum QLight
 	// client
@@ -154,7 +153,6 @@ type handler struct {
 	peerWG    sync.WaitGroup
 
 	// Quorum
-	raftMode    bool
 	engine      consensus.Engine
 	tokenHolder *qlight.TokenHolder
 
@@ -184,7 +182,6 @@ func newHandler(config *handlerConfig) (*handler, error) {
 		quitSync:   make(chan struct{}),
 		// Quorum
 		authorizationList: config.AuthorizationList,
-		raftMode:          config.RaftMode,
 		engine:            config.Engine,
 		tokenHolder:       config.tokenHolder,
 	}
@@ -474,19 +471,10 @@ func (h *handler) Start(maxPeers int) {
 	h.txsSub = h.txpool.SubscribeNewTxsEvent(h.txsCh)
 	go h.txBroadcastLoop()
 
-	// Quorum
-	if !h.raftMode {
-		// broadcast mined blocks
-		h.wg.Add(1)
-		h.minedBlockSub = h.eventMux.Subscribe(core.NewMinedBlockEvent{})
-		go h.minedBroadcastLoop()
-	} else {
-		// We set this immediately in raft mode to make sure the miner never drops
-		// incoming txes. Raft mode doesn't use the fetcher or downloader, and so
-		// this would never be set otherwise.
-		atomic.StoreUint32(&h.acceptTxs, 1)
-	}
-	// End Quorum
+	// broadcast mined blocks
+	h.wg.Add(1)
+	h.minedBlockSub = h.eventMux.Subscribe(core.NewMinedBlockEvent{})
+	go h.minedBroadcastLoop()
 
 	// start sync handlers
 	h.wg.Add(2)
@@ -670,19 +658,16 @@ func (h *handler) NodeInfo() *NodeInfo {
 // Quorum
 func (h *handler) getConsensusAlgorithm() string {
 	var consensusAlgo string
-	if h.raftMode { // raft does not use consensus interface
-		consensusAlgo = "raft"
-	} else {
-		switch h.engine.(type) {
-		case consensus.Istanbul:
-			consensusAlgo = "istanbul"
-		case *clique.Clique:
-			consensusAlgo = "clique"
-		case *ethash.Ethash:
-			consensusAlgo = "ethash"
-		default:
-			consensusAlgo = "unknown"
-		}
+
+	switch h.engine.(type) {
+	case consensus.Istanbul:
+		consensusAlgo = "istanbul"
+	case *clique.Clique:
+		consensusAlgo = "clique"
+	case *ethash.Ethash:
+		consensusAlgo = "ethash"
+	default:
+		consensusAlgo = "unknown"
 	}
 	return consensusAlgo
 }

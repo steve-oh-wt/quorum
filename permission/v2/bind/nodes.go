@@ -692,7 +692,6 @@ type NodeManagerNodeApproved struct {
 	EnodeId  string
 	Ip       string
 	Port     uint16
-	Raftport uint16
 	OrgId    string
 	Raw      types.Log // Blockchain specific contextual infos
 }

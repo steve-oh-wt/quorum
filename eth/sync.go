@@ -209,9 +209,7 @@ func (cs *chainSyncer) loop() {
 
 	for {
 		if op := cs.nextSyncOp(); op != nil {
-			if !cs.handler.raftMode {
-				cs.startSync(op)
-			}
+			cs.startSync(op)
 		}
 		select {
 		case <-cs.peerEventCh:

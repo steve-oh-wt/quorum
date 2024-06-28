@@ -241,7 +241,7 @@ func (b *Backend) ManageNodePermissions() error {
 				core.NodeInfoMap.UpsertNode(evtNodeRecoveryDone.OrgId, evtNodeRecoveryDone.EnodeId, core.NodeApproved)
 				err := ptype.UpdateDisallowedNodes(b.Ib.DataDir(), evtNodeRecoveryDone.EnodeId, ptype.NodeDelete)
 				log.Error("error updating disallowed-nodes.json", "err", err)
-				err = ptype.UpdatePermissionedNodes(b.Ib.Node(), b.Ib.DataDir(), evtNodeRecoveryDone.EnodeId, ptype.NodeAdd, b.Ib.IsRaft())
+				err = ptype.UpdatePermissionedNodes(b.Ib.Node(), b.Ib.DataDir(), evtNodeRecoveryDone.EnodeId, ptype.NodeAdd)
 				if err != nil {
 					log.Error("error updating permissioned-nodes.json", "err", err)
 				}

@@ -54,7 +54,6 @@ func (c Config) MarshalTOML() (interface{}, error) {
 		TxPool                  core.TxPoolConfig
 		GPO                     gasprice.Config
 		EnablePreimageRecording bool
-		RaftMode                bool
 		EnableNodePermission    bool
 		Istanbul                istanbul.Config
 		DocRoot                 string `toml:"-"`
@@ -103,7 +102,6 @@ func (c Config) MarshalTOML() (interface{}, error) {
 	enc.TxPool = c.TxPool
 	enc.GPO = c.GPO
 	enc.EnablePreimageRecording = c.EnablePreimageRecording
-	enc.RaftMode = c.RaftMode
 	enc.EnableNodePermission = c.EnableNodePermission
 	enc.Istanbul = c.Istanbul
 	enc.DocRoot = c.DocRoot
@@ -156,7 +154,6 @@ func (c *Config) UnmarshalTOML(unmarshal func(interface{}) error) error {
 		TxPool                  *core.TxPoolConfig
 		GPO                     *gasprice.Config
 		EnablePreimageRecording *bool
-		RaftMode                *bool
 		EnableNodePermission    *bool
 		Istanbul                *istanbul.Config
 		DocRoot                 *string `toml:"-"`
@@ -277,9 +274,6 @@ func (c *Config) UnmarshalTOML(unmarshal func(interface{}) error) error {
 	}
 	if dec.EnablePreimageRecording != nil {
 		c.EnablePreimageRecording = *dec.EnablePreimageRecording
-	}
-	if dec.RaftMode != nil {
-		c.RaftMode = *dec.RaftMode
 	}
 	if dec.EnableNodePermission != nil {
 		c.EnableNodePermission = *dec.EnableNodePermission

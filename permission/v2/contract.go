@@ -222,7 +222,7 @@ func (a *Audit) CheckPendingOp(_orgId string) bool {
 	return err == nil && op.Int64() != 0
 }
 
-func (c *Control) ConnectionAllowed(_enodeId, _ip string, _port) (bool, error) {
+func (c *Control) ConnectionAllowed(_enodeId, _ip string, _port uint16) (bool, error) {
 	url := core.GetNodeUrl(_enodeId, _ip, _port)
 	enodeId, ip, port, _, err := getNodeDetails(url, c.Backend.ContractBackend.UseDns)
 	if err != nil {

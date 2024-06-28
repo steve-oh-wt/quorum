@@ -132,10 +132,6 @@ func (b *EthAPIBackend) HeaderByHash(ctx context.Context, hash common.Hash) (*ty
 func (b *EthAPIBackend) BlockByNumber(ctx context.Context, number rpc.BlockNumber) (*types.Block, error) {
 	// Pending block is only known by the miner
 	if number == rpc.PendingBlockNumber {
-		if b.eth.handler.raftMode {
-			// Use latest instead.
-			return b.eth.blockchain.CurrentBlock(), nil
-		}
 		block := b.eth.miner.PendingBlock()
 		return block, nil
 	}
@@ -178,16 +174,6 @@ func (b *EthAPIBackend) StateAndHeaderByNumber(ctx context.Context, number rpc.B
 	}
 	// Pending state is only known by the miner
 	if number == rpc.PendingBlockNumber {
-		// Quorum
-		if b.eth.handler.raftMode {
-			// Use latest instead.
-			header, err := b.HeaderByNumber(ctx, rpc.LatestBlockNumber)
-			if header == nil || err != nil {
-				return nil, nil, err
-			}
-			publicState, privateState, err := b.eth.BlockChain().StateAtPSI(header.Root, psm.ID)
-			return EthAPIState{publicState, privateState}, header, err
-		}
 		block, publicState, privateState := b.eth.miner.Pending(psm.ID)
 		if block == nil || publicState == nil || privateState == nil {
 			return nil, nil, fmt.Errorf("Unable to retrieve the pending state from the miner.")

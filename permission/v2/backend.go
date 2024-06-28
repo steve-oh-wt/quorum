@@ -199,7 +199,7 @@ func (b *Backend) ManageNodePermissions() error {
 		for {
 			select {
 			case evtNodeApproved := <-chNodeApproved:
-				enodeId := core.GetNodeUrl(evtNodeApproved.EnodeId, evtNodeApproved.Ip[:], evtNodeApproved.Port, evtNodeApproved.Raftport)
+				enodeId := core.GetNodeUrl(evtNodeApproved.EnodeId, evtNodeApproved.Ip[:], evtNodeApproved.Port)
 				err := ptype.UpdatePermissionedNodes(b.Ib.Node(), b.Ib.DataDir(), enodeId, ptype.NodeAdd)
 				if err != nil {
 					log.Error("error updating permissioned-nodes.json", "err", err)
@@ -207,11 +207,11 @@ func (b *Backend) ManageNodePermissions() error {
 				core.NodeInfoMap.UpsertNode(evtNodeApproved.OrgId, enodeId, core.NodeApproved)
 
 			case evtNodeProposed := <-chNodeProposed:
-				enodeId := core.GetNodeUrl(evtNodeProposed.EnodeId, evtNodeProposed.Ip[:], evtNodeProposed.Port, evtNodeProposed.Raftport)
+				enodeId := core.GetNodeUrl(evtNodeProposed.EnodeId, evtNodeProposed.Ip[:], evtNodeProposed.Port)
 				core.NodeInfoMap.UpsertNode(evtNodeProposed.OrgId, enodeId, core.NodePendingApproval)
 
 			case evtNodeDeactivated := <-chNodeDeactivated:
-				enodeId := core.GetNodeUrl(evtNodeDeactivated.EnodeId, evtNodeDeactivated.Ip[:], evtNodeDeactivated.Port, evtNodeDeactivated.Raftport)
+				enodeId := core.GetNodeUrl(evtNodeDeactivated.EnodeId, evtNodeDeactivated.Ip[:], evtNodeDeactivated.Port)
 				err := ptype.UpdatePermissionedNodes(b.Ib.Node(), b.Ib.DataDir(), enodeId, ptype.NodeDelete)
 				if err != nil {
 					log.Error("error updating permissioned-nodes.json", "err", err)
@@ -219,7 +219,7 @@ func (b *Backend) ManageNodePermissions() error {
 				core.NodeInfoMap.UpsertNode(evtNodeDeactivated.OrgId, enodeId, core.NodeDeactivated)
 
 			case evtNodeActivated := <-chNodeActivated:
-				enodeId := core.GetNodeUrl(evtNodeActivated.EnodeId, evtNodeActivated.Ip[:], evtNodeActivated.Port, evtNodeActivated.Raftport)
+				enodeId := core.GetNodeUrl(evtNodeActivated.EnodeId, evtNodeActivated.Ip[:], evtNodeActivated.Port)
 				err := ptype.UpdatePermissionedNodes(b.Ib.Node(), b.Ib.DataDir(), enodeId, ptype.NodeAdd)
 				if err != nil {
 					log.Error("error updating permissioned-nodes.json", "err", err)
@@ -227,7 +227,7 @@ func (b *Backend) ManageNodePermissions() error {
 				core.NodeInfoMap.UpsertNode(evtNodeActivated.OrgId, enodeId, core.NodeApproved)
 
 			case evtNodeBlacklisted := <-chNodeBlacklisted:
-				enodeId := core.GetNodeUrl(evtNodeBlacklisted.EnodeId, evtNodeBlacklisted.Ip[:], evtNodeBlacklisted.Port, evtNodeBlacklisted.Raftport)
+				enodeId := core.GetNodeUrl(evtNodeBlacklisted.EnodeId, evtNodeBlacklisted.Ip[:], evtNodeBlacklisted.Port)
 				core.NodeInfoMap.UpsertNode(evtNodeBlacklisted.OrgId, enodeId, core.NodeBlackListed)
 				err := ptype.UpdateDisallowedNodes(b.Ib.DataDir(), enodeId, ptype.NodeAdd)
 				log.Error("error updating disallowed-nodes.json", "err", err)
@@ -237,11 +237,11 @@ func (b *Backend) ManageNodePermissions() error {
 				}
 
 			case evtNodeRecoveryInit := <-chNodeRecoveryInit:
-				enodeId := core.GetNodeUrl(evtNodeRecoveryInit.EnodeId, evtNodeRecoveryInit.Ip[:], evtNodeRecoveryInit.Port, evtNodeRecoveryInit.Raftport)
+				enodeId := core.GetNodeUrl(evtNodeRecoveryInit.EnodeId, evtNodeRecoveryInit.Ip[:], evtNodeRecoveryInit.Port)
 				core.NodeInfoMap.UpsertNode(evtNodeRecoveryInit.OrgId, enodeId, core.NodeRecoveryInitiated)
 
 			case evtNodeRecoveryDone := <-chNodeRecoveryDone:
-				enodeId := core.GetNodeUrl(evtNodeRecoveryDone.EnodeId, evtNodeRecoveryDone.Ip[:], evtNodeRecoveryDone.Port, evtNodeRecoveryDone.Raftport)
+				enodeId := core.GetNodeUrl(evtNodeRecoveryDone.EnodeId, evtNodeRecoveryDone.Ip[:], evtNodeRecoveryDone.Port)
 				core.NodeInfoMap.UpsertNode(evtNodeRecoveryDone.OrgId, enodeId, core.NodeApproved)
 				err := ptype.UpdateDisallowedNodes(b.Ib.DataDir(), enodeId, ptype.NodeDelete)
 				log.Error("error updating disallowed-nodes.json", "err", err)

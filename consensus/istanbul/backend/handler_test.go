@@ -18,6 +18,7 @@ package backend
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"math/big"
 	"testing"
@@ -33,7 +34,7 @@ import (
 )
 
 func TestIstanbulMessage(t *testing.T) {
-	_, backend := newBlockChain(1, nil)
+	_, backend := newBlockChain(1)
 	defer backend.Stop()
 
 	// generate one msg
@@ -90,7 +91,7 @@ func tryUntilMessageIsHandled(backend *Backend, arbitraryAddress common.Address,
 }
 
 func TestHandleNewBlockMessage_whenTypical(t *testing.T) {
-	_, backend := newBlockChain(1, nil)
+	_, backend := newBlockChain(1)
 	defer backend.Stop()
 	arbitraryAddress := common.StringToAddress("arbitrary")
 	arbitraryBlock, arbitraryP2PMessage := buildArbitraryP2PNewBlockMessage(t, false)
@@ -109,7 +110,8 @@ func TestHandleNewBlockMessage_whenTypical(t *testing.T) {
 }
 
 func TestHandleNewBlockMessage_whenNotAProposedBlock(t *testing.T) {
-	_, backend := newBlockChain(1, nil)
+	_, backend := newBlockChain(1)
+
 	defer backend.Stop()
 	arbitraryAddress := common.StringToAddress("arbitrary")
 	_, arbitraryP2PMessage := buildArbitraryP2PNewBlockMessage(t, false)
@@ -133,7 +135,7 @@ func TestHandleNewBlockMessage_whenNotAProposedBlock(t *testing.T) {
 }
 
 func TestHandleNewBlockMessage_whenFailToDecode(t *testing.T) {
-	_, backend := newBlockChain(1, nil)
+	_, backend := newBlockChain(1)
 	defer backend.Stop()
 	arbitraryAddress := common.StringToAddress("arbitrary")
 	_, arbitraryP2PMessage := buildArbitraryP2PNewBlockMessage(t, true)
@@ -169,6 +171,8 @@ func postAndWait(backend *Backend, block *types.Block, t *testing.T) {
 	}); err != nil {
 		t.Fatalf("%s", err)
 	}
+
+	fmt.Println("postAndWait", block.Number(), block.ParentHash())
 	<-stop
 }
 

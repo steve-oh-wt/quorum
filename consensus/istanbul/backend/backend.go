@@ -370,13 +370,3 @@ func (sb *Backend) stop() error {
 
 	return nil
 }
-
-// StartQBFTConsensus stops existing legacy ibft consensus and starts the new qbft consensus
-func (sb *Backend) StartQBFTConsensus() error {
-	sb.logger.Info("BFT: switch from IBFT to QBFT")
-	if err := sb.stop(); err != nil {
-		return err
-	}
-
-	return sb.startQBFT()
-}

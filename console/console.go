@@ -305,26 +305,8 @@ func (c *Console) AutoCompleteInput(line string, pos int) (string, []string, str
 func (c *Console) Welcome() {
 	message := "Welcome to the Geth JavaScript console!\n\n"
 
-	// Quorum: Block timestamp for Raft is in nanoseconds, so convert accordingly
-	consensus := c.getConsensus()
-	if consensus == "raft" {
-		// Print some generic Geth metadata
-		if res, err := c.jsre.Run(`
-		var message = "instance: " + web3.version.node + "\n";
-		try {
-			message += "coinbase: " + eth.coinbase + "\n";
-		} catch (err) {}
-		message += "at block: " + eth.blockNumber + " (" + new Date(eth.getBlock(eth.blockNumber).timestamp / 1000000) + ")\n";
-		try {
-			message += " datadir: " + admin.datadir + "\n";
-		} catch (err) {}
-		message
-	`); err == nil {
-			message += res.String()
-		}
-	} else {
-		// Print some generic Geth metadata
-		if res, err := c.jsre.Run(`
+	// Print some generic Geth metadata
+	if res, err := c.jsre.Run(`
 		var message = "instance: " + web3.version.node + "\n";
 		try {
 			message += "coinbase: " + eth.coinbase + "\n";
@@ -335,8 +317,7 @@ func (c *Console) Welcome() {
 		} catch (err) {}
 		message
 	`); err == nil {
-			message += res.String()
-		}
+		message += res.String()
 	}
 	// List all the supported modules for the user to call
 	if apis, err := c.client.SupportedModules(); err == nil {
@@ -349,23 +330,6 @@ func (c *Console) Welcome() {
 	}
 	message += "\nTo exit, press ctrl-d"
 	fmt.Fprintln(c.printer, message)
-}
-
-// Get the consensus mechanism that is in use
-func (c *Console) getConsensus() string {
-	if apis, err := c.client.SupportedModules(); err == nil {
-		_, raft := apis["raft"]
-		if raft {
-			return "raft"
-		}
-		_, ibft := apis["istanbul"]
-		if ibft {
-			return "istanbul"
-		}
-		return "ethhash"
-	}
-	_, _ = fmt.Fprintf(c.printer, "WARNING: call to rpc_modules() failed, unable to determine consensus mechanism\n")
-	return "unknown"
 }
 
 // Evaluate executes code and pretty prints the result to the specified output

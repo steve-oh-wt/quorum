@@ -75,7 +75,4 @@ type Backend interface {
 	HasBadProposal(hash common.Hash) bool
 
 	Close() error
-
-	// StartQBFTConsensus stops existing legacy ibft consensus and starts the new qbft consensus
-	StartQBFTConsensus() error
 }

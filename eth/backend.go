@@ -164,10 +164,10 @@ func New(stack *node.Node, config *ethconfig.Config) (*Ethereum, error) {
 		if config.QuorumChainConfig.PrivacyMarkerEnabled() && chainConfig.PrivacyPrecompileBlock == nil {
 			return nil, errors.New("Privacy marker transactions require privacyPrecompileBlock to be set in genesis.json")
 		}
-		if chainConfig.Istanbul != nil && (chainConfig.IBFT != nil || chainConfig.QBFT != nil) {
-			return nil, errors.New("the attributes config.Istanbul and config.[IBFT|QBFT] are mutually exclusive on the genesis file")
+		if chainConfig.Istanbul != nil && chainConfig.QBFT != nil {
+			return nil, errors.New("the attributes config.Istanbul and config.[QBFT] are mutually exclusive on the genesis file")
 		}
-		if chainConfig.IBFT != nil && chainConfig.QBFT != nil {
+		if chainConfig.QBFT != nil {
 			return nil, errors.New("the attributes config.IBFT and config.QBFT are mutually exclusive on the genesis file")
 		}
 	}
@@ -212,7 +212,7 @@ func New(stack *node.Node, config *ethconfig.Config) (*Ethereum, error) {
 	}
 
 	// force to set the istanbul etherbase to node key address
-	if chainConfig.Istanbul != nil || chainConfig.IBFT != nil || chainConfig.QBFT != nil {
+	if chainConfig.QBFT != nil {
 		eth.etherbase = crypto.PubkeyToAddress(stack.GetNodeKey().PublicKey)
 	}
 	bcVersion := rawdb.ReadDatabaseVersion(chainDb)
@@ -332,7 +332,6 @@ func New(stack *node.Node, config *ethconfig.Config) (*Ethereum, error) {
 			EventMux:           eth.eventMux,
 			Checkpoint:         checkpoint,
 			AuthorizationList:  config.AuthorizationList,
-			RaftMode:           config.RaftMode,
 			Engine:             eth.engine,
 			psi:                config.QuorumLightClient.PSI,
 			privateClientCache: clientCache,
@@ -355,7 +354,6 @@ func New(stack *node.Node, config *ethconfig.Config) (*Ethereum, error) {
 			EventMux:          eth.eventMux,
 			Checkpoint:        checkpoint,
 			AuthorizationList: config.AuthorizationList,
-			RaftMode:          config.RaftMode,
 			Engine:            eth.engine,
 			tokenHolder:       eth.qlightTokenHolder,
 		}); err != nil {
@@ -376,7 +374,6 @@ func New(stack *node.Node, config *ethconfig.Config) (*Ethereum, error) {
 				EventMux:                 eth.eventMux,
 				Checkpoint:               checkpoint,
 				AuthorizationList:        config.AuthorizationList,
-				RaftMode:                 config.RaftMode,
 				Engine:                   eth.engine,
 				authProvider:             qlight.NewAuthProvider(eth.blockchain.PrivateStateManager(), authManProvider),
 				privateBlockDataResolver: qlight.NewPrivateBlockDataResolver(eth.blockchain.PrivateStateManager(), private.P),
@@ -665,7 +662,7 @@ func (s *Ethereum) shouldPreserve(block *types.Block) bool {
 func (s *Ethereum) SetEtherbase(etherbase common.Address) bool {
 	//Quorum
 	consensusAlgo := s.handler.getConsensusAlgorithm()
-	if consensusAlgo == "istanbul" || consensusAlgo == "clique" || consensusAlgo == "raft" {
+	if consensusAlgo == "istanbul" || consensusAlgo == "clique" {
 		log.Error("Cannot set etherbase with selected consensus mechanism")
 		return false
 	}
@@ -869,9 +866,6 @@ func (s *Ethereum) ConsensusServicePendingLogsFeed() *event.Feed {
 // (Quorum)
 // SubscribePendingLogs starts delivering logs from transactions included in the consensus engine's pending block to the given channel.
 func (s *Ethereum) SubscribePendingLogs(ch chan<- []*types.Log) event.Subscription {
-	if s.config.RaftMode {
-		return s.consensusServicePendingLogsFeed.Subscribe(ch)
-	}
 	return s.miner.SubscribePendingLogs(ch)
 }
 

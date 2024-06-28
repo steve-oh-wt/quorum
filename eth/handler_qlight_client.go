@@ -70,7 +70,6 @@ func newQLightClientHandler(config *handlerConfig) (*handler, error) {
 		authorizationList:  config.AuthorizationList,
 		txsyncCh:           make(chan *txsync),
 		quitSync:           make(chan struct{}),
-		raftMode:           config.RaftMode,
 		engine:             config.Engine,
 		psi:                config.psi,
 		privateClientCache: config.privateClientCache,
@@ -313,14 +312,6 @@ func (h *handler) runQLightClientPeer(peer *qlightproto.Peer, handler qlightprot
 
 func (h *handler) StartQLightClient() {
 	h.maxPeers = 1
-	// Quorum
-	if h.raftMode {
-		// We set this immediately in raft mode to make sure the miner never drops
-		// incoming txes. Raft mode doesn't use the fetcher or downloader, and so
-		// this would never be set otherwise.
-		atomic.StoreUint32(&h.acceptTxs, 1)
-	}
-	// End Quorum
 
 	// start sync handlers
 	h.wg.Add(1)

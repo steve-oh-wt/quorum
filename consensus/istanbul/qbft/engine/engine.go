@@ -102,6 +102,8 @@ func (e *Engine) VerifyBlockProposal(chain consensus.ChainHeaderReader, block *t
 		return time.Until(time.Unix(int64(block.Header().Time), 0)), consensus.ErrFutureBlock
 	}
 
+	// steve
+	fmt.Println("block.Number()", block.Number(), block.ParentHash())
 	parentHeader := chain.GetHeaderByHash(block.ParentHash())
 	config := e.cfg.GetConfig(parentHeader.Number)
 

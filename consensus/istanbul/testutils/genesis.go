@@ -13,27 +13,23 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
-func Genesis(validators []common.Address, isQBFT bool) *core.Genesis {
+func Genesis(validators []common.Address) *core.Genesis {
 	// generate genesis block
 	genesis := core.DefaultGenesisBlock()
 	genesis.Config = params.TestChainConfig
 	// force enable Istanbul engine
-	genesis.Config.Istanbul = &params.IstanbulConfig{}
+	genesis.Config.QBFT = &params.QBFTConfig{}
 	genesis.Config.Ethash = nil
 	genesis.Difficulty = istanbulcommon.DefaultDifficulty
 	genesis.Nonce = istanbulcommon.EmptyBlockNonce.Uint64()
 	genesis.Mixhash = types.IstanbulDigest
 
-	if isQBFT {
-		appendValidators(genesis, validators)
-	} else {
-		appendValidatorsIstanbulExtra(genesis, validators)
-	}
+	appendValidators(genesis, validators)
 
 	return genesis
 }
 
-func GenesisAndKeys(n int, isQBFT bool) (*core.Genesis, []*ecdsa.PrivateKey) {
+func GenesisAndKeys(n int) (*core.Genesis, []*ecdsa.PrivateKey) {
 	// Setup validators
 	var nodeKeys = make([]*ecdsa.PrivateKey, n)
 	var addrs = make([]common.Address, n)
@@ -43,7 +39,7 @@ func GenesisAndKeys(n int, isQBFT bool) (*core.Genesis, []*ecdsa.PrivateKey) {
 	}
 
 	// generate genesis block
-	genesis := Genesis(addrs, isQBFT)
+	genesis := Genesis(addrs)
 
 	return genesis, nodeKeys
 }

@@ -2418,18 +2418,6 @@ func MakeChain(ctx *cli.Context, stack *node.Node, useExist bool) (chain *core.B
 	}
 	if config.Clique != nil {
 		engine = clique.New(config.Clique, chainDb)
-	} else if config.Istanbul != nil {
-		log.Warn("WARNING: The attribute config.istanbul is deprecated and will be removed in the future, please use config.ibft on genesis file")
-		// for IBFT
-		istanbulConfig := istanbul.DefaultConfig
-		if config.Istanbul.Epoch != 0 {
-			istanbulConfig.Epoch = config.Istanbul.Epoch
-		}
-		istanbulConfig.ProposerPolicy = istanbul.NewProposerPolicy(istanbul.ProposerPolicyId(config.Istanbul.ProposerPolicy))
-		istanbulConfig.Ceil2Nby3Block = config.Istanbul.Ceil2Nby3Block
-		istanbulConfig.Transitions = config.Transitions
-		istanbulConfig.Client = ethclient.NewClient(client)
-		engine = istanbulBackend.New(istanbulConfig, stack.GetNodeKey(), chainDb)
 	} else if config.QBFT != nil {
 		qbftConfig := setBFTConfig(config.QBFT.BFTConfig)
 		qbftConfig.BlockReward = config.QBFT.BlockReward

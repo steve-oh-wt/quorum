@@ -75,9 +75,8 @@ func newBlockchainFromConfig(genesis *core.Genesis, nodeKeys []*ecdsa.PrivateKey
 // in this test, we can set n to 1, and it means we can process Istanbul and commit a
 // block by one node. Otherwise, if n is larger than 1, we have to generate
 // other fake events to process Istanbul.
-func newBlockChain(n int, qbftBlock *big.Int) (*core.BlockChain, *Backend) {
-	isQBFT := qbftBlock != nil && qbftBlock.Uint64() == 0
-	genesis, nodeKeys := testutils.GenesisAndKeys(n, isQBFT)
+func newBlockChain(n int) (*core.BlockChain, *Backend) {
+	genesis, nodeKeys := testutils.GenesisAndKeys(n)
 
 	config := copyConfig(istanbul.DefaultConfig)
 
@@ -121,7 +120,7 @@ func makeBlockWithoutSeal(chain *core.BlockChain, engine *Backend, parent *types
 }
 
 func TestQBFTPrepare(t *testing.T) {
-	chain, engine := newBlockChain(1, big.NewInt(0))
+	chain, engine := newBlockChain(1)
 	defer engine.Stop()
 	header := makeHeader(chain.Genesis(), engine.config)
 	err := engine.Prepare(chain, header)
@@ -137,7 +136,7 @@ func TestQBFTPrepare(t *testing.T) {
 }
 
 func TestSealStopChannel(t *testing.T) {
-	chain, engine := newBlockChain(1, big.NewInt(0))
+	chain, engine := newBlockChain(1)
 	defer engine.Stop()
 	block := makeBlockWithoutSeal(chain, engine, chain.Genesis())
 	stop := make(chan struct{}, 1)
@@ -167,7 +166,7 @@ func TestSealStopChannel(t *testing.T) {
 }
 
 func TestSealCommittedOtherHash(t *testing.T) {
-	chain, engine := newBlockChain(1, big.NewInt(0))
+	chain, engine := newBlockChain(1)
 	defer engine.Stop()
 	block := makeBlockWithoutSeal(chain, engine, chain.Genesis())
 	otherBlock := makeBlockWithoutSeal(chain, engine, block)
@@ -215,7 +214,7 @@ func updateQBFTBlock(block *types.Block, addr common.Address) *types.Block {
 }
 
 func TestSealCommitted(t *testing.T) {
-	chain, engine := newBlockChain(1, big.NewInt(0))
+	chain, engine := newBlockChain(1)
 	defer engine.Stop()
 	block := makeBlockWithoutSeal(chain, engine, chain.Genesis())
 	expectedBlock := updateQBFTBlock(block, engine.Address())
@@ -236,7 +235,7 @@ func TestSealCommitted(t *testing.T) {
 }
 
 func TestVerifyHeader(t *testing.T) {
-	chain, engine := newBlockChain(1, big.NewInt(0))
+	chain, engine := newBlockChain(1)
 	defer engine.Stop()
 
 	// istanbulcommon.ErrEmptyCommittedSeals case
@@ -331,7 +330,7 @@ func TestVerifyHeader(t *testing.T) {
 }
 
 func TestVerifyHeaders(t *testing.T) {
-	chain, engine := newBlockChain(1, big.NewInt(0))
+	chain, engine := newBlockChain(1)
 	defer engine.Stop()
 	genesis := chain.Genesis()
 
