@@ -419,8 +419,7 @@ func (c QBFTConfig) String() string {
 }
 
 const (
-	QBFT = "qbft"
-
+	QBFT            = "qbft"
 	ContractMode    = "contract"
 	BlockHeaderMode = "blockheader"
 )
