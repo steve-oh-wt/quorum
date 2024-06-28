@@ -117,7 +117,7 @@ func isNewV4(n *Node) bool {
 // NewV4Hostname creates a node from discovery v4 node information. The record
 // contained in the node has a zero-length signature. It sets the hostname or ip
 // of the node depends on hostname context
-func NewV4Hostname(pubkey *ecdsa.PublicKey, hostname string, tcp, udp, raftPort int) *Node {
+func NewV4Hostname(pubkey *ecdsa.PublicKey, hostname string, tcp, udp int) *Node {
 	var r enr.Record
 
 	if ip := net.ParseIP(hostname); ip == nil {
@@ -154,10 +154,7 @@ func parseComplete(rawurl string) (*Node, error) {
 	// Parse the IP address.
 	ips, err := net.LookupIP(u.Hostname())
 	if err != nil {
-		// Quorum: if IP look up fail don't return error for raft url
-		if qv.Get("raftport") == "" {
-			return nil, err
-		}
+		return nil, err
 	} else {
 		ip = ips[0]
 		// Ensure the IP is 4 bytes long for IPv4 addresses.
@@ -177,19 +174,6 @@ func parseComplete(rawurl string) (*Node, error) {
 			return nil, errors.New("invalid discport in query")
 		}
 	}
-
-	// Quorum
-	if qv.Get("raftport") != "" {
-		raftPort, err := strconv.ParseUint(qv.Get("raftport"), 10, 16)
-		if err != nil {
-			return nil, errors.New("invalid raftport in query")
-		}
-		if u.Hostname() == "" {
-			return nil, errors.New("empty hostname in raft url")
-		}
-		return NewV4Hostname(id, u.Hostname(), int(tcpPort), int(udpPort), int(raftPort)), nil
-	}
-	// End-Quorum
 
 	return NewV4(id, ip, int(tcpPort), int(udpPort)), nil
 }
