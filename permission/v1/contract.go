@@ -165,7 +165,7 @@ func (a *Audit) CheckPendingOp(_orgId string) bool {
 	return err == nil && op.Int64() != 0
 }
 
-func (c *Control) ConnectionAllowed(_enodeId, _ip string, _port, _raftPort uint16) (bool, error) {
+func (c *Control) ConnectionAllowed(_enodeId, _ip string, _port uint16) (bool, error) {
 	passedEnodeId, err := enode.ParseV4(_enodeId)
 	if err != nil {
 		return false, nil

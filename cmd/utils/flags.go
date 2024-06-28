@@ -2409,7 +2409,7 @@ func MakeChain(ctx *cli.Context, stack *node.Node, useExist bool) (chain *core.B
 		Fatalf("Failed to attach to self: %v", err)
 	}
 	// Lazy logic
-	if config.Clique == nil && config.QBFT == nil && config.Istanbul == nil {
+	if config.Clique == nil && config.QBFT == nil {
 		config.GetTransitionValue(big.NewInt(0), func(t params.Transition) {
 			if strings.EqualFold(t.Algorithm, params.QBFT) {
 				config.QBFT = &params.QBFTConfig{}

@@ -298,15 +298,15 @@ func ParsePermissionConfig(dir string) (PermissionConfig, error) {
 }
 
 // returns the enode details
-func GetNodeDetails(url string, useDns bool) (string, string, uint16, uint16, error) {
+func GetNodeDetails(url string, useDns bool) (string, string, uint16, error) {
 	// validate Node id and
 	var ip string
 	if len(url) == 0 {
-		return "", ip, 0, 0, errors.New("invalid Node id. empty url")
+		return "", ip, 0, errors.New("invalid Node id. empty url")
 	}
 	enodeDet, err := enode.ParseV4(url)
 	if err != nil {
-		return "", ip, 0, 0, fmt.Errorf("invalid Node id. %s", err.Error())
+		return "", ip, 0, fmt.Errorf("invalid Node id. %s", err.Error())
 	}
 
 	ip = enodeDet.IP().String()
@@ -315,7 +315,7 @@ func GetNodeDetails(url string, useDns bool) (string, string, uint16, uint16, er
 			ip = enodeDet.Host()
 		}
 	}
-	return enodeDet.EnodeID(), ip, uint16(enodeDet.TCP()), uint16(enodeDet.RaftPort()), err
+	return enodeDet.EnodeID(), ip, uint16(enodeDet.TCP()), err
 }
 
 func (pc *PermissionConfig) IsEmpty() bool {

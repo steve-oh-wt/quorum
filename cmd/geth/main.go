@@ -387,11 +387,6 @@ func startNode(ctx *cli.Context, stack *node.Node, backend ethapi.Backend) {
 	log.DoEmitCheckpoints = ctx.GlobalBool(utils.EmitCheckpointsFlag.Name)
 	debug.Memsize.Add("node", stack)
 
-	// raft mode does not support --exitwhensynced
-	if ctx.GlobalBool(utils.ExitWhenSyncedFlag.Name) && ctx.GlobalBool(utils.RaftModeFlag.Name) {
-		utils.Fatalf("raft consensus does not support --exitwhensynced")
-	}
-
 	// Start up the node itself
 	utils.StartNode(ctx, stack)
 
@@ -517,7 +512,7 @@ func startNode(ctx *cli.Context, stack *node.Node, backend ethapi.Backend) {
 	}
 
 	// checks quorum features that depend on the ethereum service
-	quorumValidateEthService(stack, ctx.GlobalBool(utils.RaftModeFlag.Name))
+	quorumValidateEthService(stack)
 }
 
 // unlockAccounts unlocks any account specifically requested.

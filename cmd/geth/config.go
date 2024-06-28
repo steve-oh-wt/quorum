@@ -364,7 +364,7 @@ func quorumValidateConsensus(ethereum *eth.Ethereum) {
 	ethereum.BlockChain().Config().GetTransitionValue(big.NewInt(0), func(transition params.Transition) {
 		transitionAlgorithmOnBlockZero = strings.EqualFold(transition.Algorithm, params.QBFT)
 	})
-	if !transitionAlgorithmOnBlockZero && ethereum.BlockChain().Config().Istanbul == nil && ethereum.BlockChain().Config().QBFT == nil && ethereum.BlockChain().Config().Clique == nil {
+	if !transitionAlgorithmOnBlockZero && ethereum.BlockChain().Config().QBFT == nil && ethereum.BlockChain().Config().Clique == nil {
 		utils.Fatalf("Consensus not specified. Exiting!!")
 	}
 }

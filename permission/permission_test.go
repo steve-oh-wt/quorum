@@ -401,10 +401,10 @@ func TestQuorumControlsAPI_OrgAPIs(t *testing.T) {
 }
 
 func testConnectionAllowed(t *testing.T, q *QuorumControlsAPI, url string, expected bool) {
-	enode, ip, port, raftPort, err := ptype.GetNodeDetails(url, false, false)
+	enode, ip, port, err := ptype.GetNodeDetails(url, false)
 	if q.permCtrl.IsV2Permission() {
 		assert.NoError(t, err)
-		connAllowed := q.ConnectionAllowed(enode, ip, port, raftPort)
+		connAllowed := q.ConnectionAllowed(enode, ip, port)
 		assert.Equal(t, expected, connAllowed)
 	} else {
 		assert.Equal(t, isNodePermissionedV1(url, enode, enode, "INCOMING"), expected)

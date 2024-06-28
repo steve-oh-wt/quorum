@@ -28,7 +28,7 @@ func isNodePermissionedV2(node *enode.Node, nodename string, currentNode string,
 		log.Debug("isNodePermissionedV2 connection not allowed - permissionService is not set")
 		return false
 	}
-	allowed, err := permissionService.ConnectionAllowed(node.EnodeID(), node.IP().String(), uint16(node.TCP()), uint16(node.RaftPort()))
+	allowed, err := permissionService.ConnectionAllowed(node.EnodeID(), node.IP().String(), uint16(node.TCP()))
 	log.Debug("isNodePermissionedV2 V2", "allowed", allowed, "url", node.String())
 	if err != nil {
 		log.Error("isNodePermissionedV2 connection not allowed", "err", err)

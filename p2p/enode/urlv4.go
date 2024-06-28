@@ -125,11 +125,6 @@ func NewV4Hostname(pubkey *ecdsa.PublicKey, hostname string, tcp, udp, raftPort 
 	} else {
 		r.Set(enr.IP(ip))
 	}
-
-	if raftPort != 0 {
-		r.Set(enr.RaftPort(raftPort))
-	}
-
 	return newV4(pubkey, r, tcp, udp)
 }
 
@@ -265,15 +260,6 @@ func (n *Node) URLv4() string {
 		}
 		if n.UDP() != n.TCP() {
 			u.RawQuery = "discport=" + strconv.Itoa(n.UDP())
-		}
-		// Quorum
-		if n.HasRaftPort() {
-			raftQuery := "raftport=" + strconv.Itoa(n.RaftPort())
-			if len(u.RawQuery) > 0 {
-				u.RawQuery = u.RawQuery + "&" + raftQuery
-			} else {
-				u.RawQuery = raftQuery
-			}
 		}
 	}
 	return u.String()

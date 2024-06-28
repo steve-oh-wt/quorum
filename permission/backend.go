@@ -188,12 +188,12 @@ func (p *PermissionCtrl) getContractBackend() ptype.ContractBackend {
 	return ptype.ContractBackend{EthClnt: p.ethClnt, Key: p.key, PermConfig: p.permConfig, UseDns: false /*p.isRaft*/, ChainID: p.chainID}
 }
 
-func (p *PermissionCtrl) ConnectionAllowed(_enodeId, _ip string, _port, _raftPort uint16) (bool, error) {
+func (p *PermissionCtrl) ConnectionAllowed(_enodeId, _ip string, _port uint16) (bool, error) {
 	cs, err := p.backend.GetControlService(p.getContractBackend())
 	if err != nil {
 		return false, err
 	}
-	return cs.ConnectionAllowed(_enodeId, _ip, _port, _raftPort)
+	return cs.ConnectionAllowed(_enodeId, _ip, _port)
 }
 
 func (p *PermissionCtrl) IsTransactionAllowed(_sender common.Address, _target common.Address, _value *big.Int, _gasPrice *big.Int, _gasLimit *big.Int, _payload []byte, transactionType core.TransactionType) error {
@@ -211,7 +211,7 @@ func (p *PermissionCtrl) IsTransactionAllowed(_sender common.Address, _target co
 }
 
 func (p *PermissionCtrl) populateBackEnd() error {
-	backend := ptype.NewInterfaceBackend(p.node, false, p.dataDir)
+	backend := ptype.NewInterfaceBackend(p.node, p.dataDir)
 
 	switch p.permConfig.PermissionsModel {
 	case ptype.PERMISSION_V2:

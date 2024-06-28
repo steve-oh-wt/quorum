@@ -89,10 +89,9 @@ func (n *Node) Seq() uint64 {
 	return n.r.Seq()
 }
 
-// Quorum
-// Incomplete returns true for nodes with no IP address and no hostname if with raftport.
+// Incomplete returns true for nodes with no IP address.
 func (n *Node) Incomplete() bool {
-	return n.IP() == nil && (!n.HasRaftPort() || (n.Host() == "" && n.HasRaftPort()))
+	return n.IP() == nil
 }
 
 // Load retrieves an entry from the underlying record.
@@ -152,20 +151,6 @@ func (n *Node) UDP() int {
 	var port enr.UDP
 	n.Load(&port)
 	return int(port)
-}
-
-// used by Quorum RAFT - returns the Raft port of the node
-func (n *Node) RaftPort() int {
-	var port enr.RaftPort
-	err := n.Load(&port)
-	if err != nil {
-		return 0
-	}
-	return int(port)
-}
-
-func (n *Node) HasRaftPort() bool {
-	return n.RaftPort() > 0
 }
 
 // UDP returns the TCP port of the node.

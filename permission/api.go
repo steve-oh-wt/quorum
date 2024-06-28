@@ -520,13 +520,13 @@ func (q *QuorumControlsAPI) TransactionAllowed(txa ethapi.SendTxArgs) bool {
 	}
 }
 
-func (q *QuorumControlsAPI) ConnectionAllowed(enodeId, ip string, port, raftPort uint16) bool {
+func (q *QuorumControlsAPI) ConnectionAllowed(enodeId, ip string, port uint16) bool {
 	controlService, err := q.permCtrl.NewPermissionControlService()
 	if err != nil {
 		return false
 	}
 
-	if allowed, err := controlService.ConnectionAllowed(enodeId, ip, port, raftPort); err != nil {
+	if allowed, err := controlService.ConnectionAllowed(enodeId, ip, port); err != nil {
 		return false
 	} else {
 		return allowed

@@ -122,11 +122,11 @@ func (i *Init) AddAdminAccount(_acct common.Address) (*types.Transaction, error)
 }
 
 func (i *Init) AddAdminNode(url string) (*types.Transaction, error) {
-	enodeId, ip, port, raftPort, err := getNodeDetails(url, i.Backend.UseDns)
+	enodeId, ip, port, err := getNodeDetails(url, i.Backend.UseDns)
 	if err != nil {
 		return nil, err
 	}
-	return i.PermInterfSession.AddAdminNode(enodeId, ip, port, raftPort)
+	return i.PermInterfSession.AddAdminNode(enodeId, ip, port, 0)
 }
 
 func (i *Init) SetPolicy(_nwAdminOrg string, _nwAdminRole string, _oAdminRole string) (*types.Transaction, error) {
@@ -207,7 +207,7 @@ func (a *Audit) ValidatePendingOp(_authOrg, _orgId, _url string, _account common
 	var enodeId string
 	var err error
 	if _url != "" {
-		enodeId, _, _, _, err = getNodeDetails(_url, a.Backend.ContractBackend.UseDns)
+		enodeId, _, _, err = getNodeDetails(_url, a.Backend.ContractBackend.UseDns)
 		if err != nil {
 			log.Error("permission: encountered error while checking for pending operations", "err", err)
 			return false
@@ -224,7 +224,7 @@ func (a *Audit) CheckPendingOp(_orgId string) bool {
 
 func (c *Control) ConnectionAllowed(_enodeId, _ip string, _port uint16) (bool, error) {
 	url := core.GetNodeUrl(_enodeId, _ip, _port)
-	enodeId, ip, port, _, err := getNodeDetails(url, c.Backend.ContractBackend.UseDns)
+	enodeId, ip, port, err := getNodeDetails(url, c.Backend.ContractBackend.UseDns)
 	if err != nil {
 		return false, err
 	}
@@ -261,60 +261,60 @@ func (o *Org) UpdateOrgStatus(_args ptype.TxArgs) (*types.Transaction, error) {
 }
 
 func (o *Org) ApproveOrg(_args ptype.TxArgs) (*types.Transaction, error) {
-	enodeId, ip, port, raftPort, err := getNodeDetails(_args.Url, o.Backend.ContractBackend.UseDns)
+	enodeId, ip, port, err := getNodeDetails(_args.Url, o.Backend.ContractBackend.UseDns)
 	if err != nil {
 		return nil, err
 	}
-	return o.Backend.PermInterfSession.ApproveOrg(_args.OrgId, enodeId, ip, port, raftPort, _args.AcctId)
+	return o.Backend.PermInterfSession.ApproveOrg(_args.OrgId, enodeId, ip, port, 0, _args.AcctId)
 }
 
 func (o *Org) AddSubOrg(_args ptype.TxArgs) (*types.Transaction, error) {
-	enodeId, ip, port, raftPort, err := getNodeDetails(_args.Url, o.Backend.ContractBackend.UseDns)
+	enodeId, ip, port, err := getNodeDetails(_args.Url, o.Backend.ContractBackend.UseDns)
 	if err != nil {
 		return nil, err
 	}
-	return o.Backend.PermInterfSession.AddSubOrg(_args.POrgId, _args.OrgId, enodeId, ip, port, raftPort)
+	return o.Backend.PermInterfSession.AddSubOrg(_args.POrgId, _args.OrgId, enodeId, ip, port, 0)
 }
 
 func (o *Org) AddOrg(_args ptype.TxArgs) (*types.Transaction, error) {
-	enodeId, ip, port, raftPort, err := getNodeDetails(_args.Url, o.Backend.ContractBackend.UseDns)
+	enodeId, ip, port, err := getNodeDetails(_args.Url, o.Backend.ContractBackend.UseDns)
 	if err != nil {
 		return nil, err
 	}
-	return o.Backend.PermInterfSession.AddOrg(_args.OrgId, enodeId, ip, port, raftPort, _args.AcctId)
+	return o.Backend.PermInterfSession.AddOrg(_args.OrgId, enodeId, ip, port, 0, _args.AcctId)
 }
 
 func (n *Node) ApproveBlacklistedNodeRecovery(_args ptype.TxArgs) (*types.Transaction, error) {
-	enodeId, ip, port, raftPort, err := getNodeDetails(_args.Url, n.Backend.ContractBackend.UseDns)
+	enodeId, ip, port, err := getNodeDetails(_args.Url, n.Backend.ContractBackend.UseDns)
 	if err != nil {
 		return nil, err
 	}
-	return n.Backend.PermInterfSession.ApproveBlacklistedNodeRecovery(_args.OrgId, enodeId, ip, port, raftPort)
+	return n.Backend.PermInterfSession.ApproveBlacklistedNodeRecovery(_args.OrgId, enodeId, ip, port, 0)
 }
 
 func (n *Node) StartBlacklistedNodeRecovery(_args ptype.TxArgs) (*types.Transaction, error) {
-	enodeId, ip, port, raftPort, err := getNodeDetails(_args.Url, n.Backend.ContractBackend.UseDns)
+	enodeId, ip, port, err := getNodeDetails(_args.Url, n.Backend.ContractBackend.UseDns)
 	if err != nil {
 		return nil, err
 	}
-	return n.Backend.PermInterfSession.StartBlacklistedNodeRecovery(_args.OrgId, enodeId, ip, port, raftPort)
+	return n.Backend.PermInterfSession.StartBlacklistedNodeRecovery(_args.OrgId, enodeId, ip, port, 0)
 }
 
 func (n *Node) AddNode(_args ptype.TxArgs) (*types.Transaction, error) {
-	enodeId, ip, port, raftPort, err := getNodeDetails(_args.Url, n.Backend.ContractBackend.UseDns)
+	enodeId, ip, port, err := getNodeDetails(_args.Url, n.Backend.ContractBackend.UseDns)
 	if err != nil {
 		return nil, err
 	}
 
-	return n.Backend.PermInterfSession.AddNode(_args.OrgId, enodeId, ip, port, raftPort)
+	return n.Backend.PermInterfSession.AddNode(_args.OrgId, enodeId, ip, port, 0)
 }
 
 func (n *Node) UpdateNodeStatus(_args ptype.TxArgs) (*types.Transaction, error) {
-	enodeId, ip, port, raftPort, err := getNodeDetails(_args.Url, n.Backend.ContractBackend.UseDns)
+	enodeId, ip, port, err := getNodeDetails(_args.Url, n.Backend.ContractBackend.UseDns)
 	if err != nil {
 		return nil, err
 	}
-	return n.Backend.PermInterfSession.UpdateNodeStatus(_args.OrgId, enodeId, ip, port, raftPort, big.NewInt(int64(_args.Action)))
+	return n.Backend.PermInterfSession.UpdateNodeStatus(_args.OrgId, enodeId, ip, port, 0, big.NewInt(int64(_args.Action)))
 }
 
 func (i *Init) bindContract() error {
@@ -404,10 +404,10 @@ func (i *Init) initSession() {
 }
 
 // checks if the passed URL is no nil and then calls GetNodeDetails
-func getNodeDetails(url string, useDns bool) (string, string, uint16, uint16, error) {
+func getNodeDetails(url string, useDns bool) (string, string, uint16, error) {
 	if len(url) > 0 {
 		return ptype.GetNodeDetails(url, useDns)
 	}
 
-	return "", "", uint16(0), uint16(0), nil
+	return "", "", uint16(0), nil
 }
