@@ -33,7 +33,6 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/metrics"
 	"github.com/ethereum/go-ethereum/params"
-	pcore "github.com/ethereum/go-ethereum/permission/core"
 	"github.com/ethereum/go-ethereum/private"
 )
 
@@ -590,10 +589,6 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		// Ether value is not currently supported on private transactions
 		if tx.IsPrivate() && (len(tx.Data()) == 0 || tx.Value().Sign() != 0) {
 			return ErrEtherValueUnsupported
-		}
-		// Quorum - check if the sender account is authorized to perform the transaction
-		if err := pcore.CheckAccountPermission(tx.From(), tx.To(), tx.Value(), tx.Data(), tx.Gas(), tx.GasPrice()); err != nil {
-			return err
 		}
 	}
 	if !pool.chainconfig.IsQuorum || pool.chainconfig.IsGasPriceEnabled(pool.chain.CurrentBlock().Header().Number) {

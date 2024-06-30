@@ -247,7 +247,6 @@ var AppHelpFlagGroups = []flags.FlagGroup{
 		Name: "QUORUM",
 		Flags: []cli.Flag{
 			utils.QuorumImmutabilityThreshold,
-			utils.EnableNodePermissionFlag,
 			utils.PluginSettingsFlag,
 			utils.PluginSkipVerifyFlag,
 			utils.PluginLocalVerifyFlag,
@@ -266,8 +265,6 @@ var AppHelpFlagGroups = []flags.FlagGroup{
 			utils.QuorumLightServerP2PListenPortFlag,
 			utils.QuorumLightServerP2PMaxPeersFlag,
 			utils.QuorumLightServerP2PNetrestrictFlag,
-			utils.QuorumLightServerP2PPermissioningFlag,
-			utils.QuorumLightServerP2PPermissioningPrefixFlag,
 			utils.QuorumLightClientFlag,
 			utils.QuorumLightClientPSIFlag,
 			utils.QuorumLightClientTokenEnabledFlag,

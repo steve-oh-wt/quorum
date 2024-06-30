@@ -73,8 +73,6 @@ import (
 	"github.com/ethereum/go-ethereum/p2p/nat"
 	"github.com/ethereum/go-ethereum/p2p/netutil"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/ethereum/go-ethereum/permission"
-	"github.com/ethereum/go-ethereum/permission/core/types"
 	"github.com/ethereum/go-ethereum/plugin"
 	"github.com/ethereum/go-ethereum/private"
 	pcsclite "github.com/gballet/go-libpcsclite"
@@ -820,11 +818,6 @@ var (
 		Usage: "If enabled, emit specially formatted logging checkpoints",
 	}
 
-	// Permission
-	EnableNodePermissionFlag = cli.BoolFlag{
-		Name:  "permissioned",
-		Usage: "If enabled, the node will allow only a defined list of nodes to connect",
-	}
 	AllowedFutureBlockTimeFlag = cli.Uint64Flag{
 		Name:  "allowedfutureblocktime",
 		Usage: "Max time (in seconds) from current time allowed for blocks, before they're considered future blocks",
@@ -956,14 +949,6 @@ var (
 	QuorumLightServerP2PNetrestrictFlag = cli.StringFlag{
 		Name:  "qlight.server.p2p.netrestrict",
 		Usage: "Restricts network communication to the given IP networks (CIDR masks)",
-	}
-	QuorumLightServerP2PPermissioningFlag = cli.BoolFlag{
-		Name:  "qlight.server.p2p.permissioning",
-		Usage: "If enabled, the qlight peers are checked against a permissioned list and a disallowed list.",
-	}
-	QuorumLightServerP2PPermissioningPrefixFlag = cli.StringFlag{
-		Name:  "qlight.server.p2p.permissioning.prefix",
-		Usage: "The prefix for the permissioned-nodes.json and disallowed-nodes.json files.",
 	}
 	QuorumLightClientFlag = cli.BoolFlag{
 		Name:  "qlight.client",
@@ -1487,8 +1472,6 @@ func SetQP2PConfig(ctx *cli.Context, cfg *p2p.Config) {
 		cfg.ListenAddr = fmt.Sprintf(":%d", ctx.GlobalInt(QuorumLightServerP2PListenPortFlag.Name))
 	}
 
-	cfg.EnableNodePermission = ctx.GlobalIsSet(QuorumLightServerP2PPermissioningFlag.Name)
-
 	cfg.MaxPeers = 10
 	if ctx.GlobalIsSet(QuorumLightServerP2PMaxPeersFlag.Name) {
 		cfg.MaxPeers = ctx.GlobalInt(QuorumLightServerP2PMaxPeersFlag.Name)
@@ -1542,10 +1525,6 @@ func SetNodeConfig(ctx *cli.Context, cfg *node.Config) {
 		cfg.InsecureUnlockAllowed = ctx.GlobalBool(InsecureUnlockAllowedFlag.Name)
 	}
 
-	// Quorum
-	if ctx.GlobalIsSet(EnableNodePermissionFlag.Name) {
-		cfg.EnableNodePermission = ctx.GlobalBool(EnableNodePermissionFlag.Name)
-	}
 	if ctx.GlobalIsSet(MultitenancyFlag.Name) {
 		cfg.EnableMultitenancy = ctx.GlobalBool(MultitenancyFlag.Name)
 	}
@@ -2274,20 +2253,6 @@ func RegisterPluginService(stack *node.Node, cfg *node.Config, skipVerify bool, 
 	stack.RegisterAPIs(pluginManager.APIs())
 	stack.RegisterLifecycle(pluginManager)
 	log.Info("plugin service registered")
-}
-
-// Configure smart-contract-based permissioning service
-func RegisterPermissionService(stack *node.Node, useDns bool, chainID *big.Int) {
-	permissionConfig, err := types.ParsePermissionConfig(stack.DataDir())
-	if err != nil {
-		Fatalf("loading of %s failed due to %v", params.PERMISSION_MODEL_CONFIG, err)
-	}
-	// start the permissions management service
-	_, err = permission.NewQuorumPermissionCtrl(stack, &permissionConfig, useDns, chainID)
-	if err != nil {
-		Fatalf("failed to load the permission contracts as given in %s due to %v", params.PERMISSION_MODEL_CONFIG, err)
-	}
-	log.Info("permission service registered")
 }
 
 func RegisterExtensionService(stack *node.Node, ethService *eth.Ethereum) {

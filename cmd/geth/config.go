@@ -40,7 +40,6 @@ import (
 	"github.com/ethereum/go-ethereum/p2p"
 	"github.com/ethereum/go-ethereum/p2p/enode"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/ethereum/go-ethereum/permission/core"
 	"github.com/ethereum/go-ethereum/private"
 	"github.com/ethereum/go-ethereum/private/engine"
 	"github.com/ethereum/go-ethereum/qlight"
@@ -159,14 +158,6 @@ func makeConfigNode(ctx *cli.Context) (*node.Node, gethConfig) {
 		p2p.SetQLightTLSConfig(readQLightServerTLSConfig(ctx))
 		// permissioning for the qlight P2P server
 		stack.QServer().SetNewTransportFunc(p2p.NewQlightServerTransport)
-		if ctx.GlobalIsSet(utils.QuorumLightServerP2PPermissioningFlag.Name) {
-			prefix := "qlight"
-			if ctx.GlobalIsSet(utils.QuorumLightServerP2PPermissioningPrefixFlag.Name) {
-				prefix = ctx.GlobalString(utils.QuorumLightServerP2PPermissioningPrefixFlag.Name)
-			}
-			fbp := core.NewFileBasedPermissoningWithPrefix(prefix)
-			stack.QServer().SetIsNodePermissioned(fbp.IsNodePermissionedEnode)
-		}
 	}
 	if cfg.Eth.QuorumLightClient.Enabled() {
 		p2p.SetQLightTLSConfig(readQLightClientTLSConfig(ctx))
@@ -211,10 +202,6 @@ func makeFullNode(ctx *cli.Context) (*node.Node, ethapi.Backend) {
 		if err != nil {
 			utils.Fatalf("Error initialising QLight Token Manager: %s", err.Error())
 		}
-	}
-
-	if cfg.Node.IsPermissionEnabled() {
-		utils.RegisterPermissionService(stack, false, backend.ChainConfig().ChainID)
 	}
 
 	if private.IsQuorumPrivacyEnabled() {

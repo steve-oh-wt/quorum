@@ -40,7 +40,6 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/metrics"
 	"github.com/ethereum/go-ethereum/node"
-	"github.com/ethereum/go-ethereum/permission"
 	"github.com/ethereum/go-ethereum/plugin"
 	"gopkg.in/urfave/cli.v1"
 )
@@ -157,7 +156,6 @@ var (
 		utils.CatalystFlag,
 		// Quorum
 		utils.QuorumImmutabilityThreshold,
-		utils.EnableNodePermissionFlag,
 		utils.EmitCheckpointsFlag,
 		utils.IstanbulRequestTimeoutFlag,
 		utils.IstanbulBlockPeriodFlag,
@@ -187,8 +185,6 @@ var (
 		utils.QuorumLightServerP2PListenPortFlag,
 		utils.QuorumLightServerP2PMaxPeersFlag,
 		utils.QuorumLightServerP2PNetrestrictFlag,
-		utils.QuorumLightServerP2PPermissioningFlag,
-		utils.QuorumLightServerP2PPermissioningPrefixFlag,
 		utils.QuorumLightClientFlag,
 		utils.QuorumLightClientPSIFlag,
 		utils.QuorumLightClientTokenEnabledFlag,
@@ -473,22 +469,6 @@ func startNode(ctx *cli.Context, stack *node.Node, backend ethapi.Backend) {
 				}
 			}
 		}()
-	}
-
-	// Quorum
-	//
-	// checking if permissions is enabled and staring the permissions service
-	if stack.Config().EnableNodePermission {
-		stack.Server().SetIsNodePermissioned(permission.IsNodePermissioned)
-		if stack.IsPermissionEnabled() {
-			var permissionService *permission.PermissionCtrl
-			if err := stack.Lifecycle(&permissionService); err != nil {
-				utils.Fatalf("Permission service not runnning: %v", err)
-			}
-			if err := permissionService.AfterStart(); err != nil {
-				utils.Fatalf("Permission service post construct failure: %v", err)
-			}
-		}
 	}
 
 	// Start auxiliary services if enabled

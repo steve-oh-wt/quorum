@@ -11,7 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/internal/ethapi"
 	"github.com/ethereum/go-ethereum/multitenancy"
-	"github.com/ethereum/go-ethereum/permission/core"
 )
 
 var (
@@ -203,10 +202,6 @@ func (api *PrivateExtensionAPI) ApproveExtension(ctx context.Context, addressToV
 		return "", errors.New("contract extension process complete. nothing to accept")
 	}
 
-	if !core.CheckIfAdminAccount(txa.From) {
-		return "", errors.New("account cannot accept extension")
-	}
-
 	// get all participants for the contract being extended
 	participants, err := api.privacyService.GetAllParticipants(api.privacyService.stateFetcher.getCurrentBlockHash(), addressToVoteOn, psi)
 	if err == nil {
@@ -309,12 +304,6 @@ func (api *PrivateExtensionAPI) ExtendContract(ctx context.Context, toExtend com
 	// account and recipient account is an admin account as well
 	if txa.From == recipientAddr {
 		return "", errors.New("account accepting the extension cannot be the account initiating extension")
-	}
-	if !core.CheckIfAdminAccount(txa.From) {
-		return "", errors.New("account not an org admin account, cannot initiate extension")
-	}
-	if !core.CheckIfAdminAccount(recipientAddr) {
-		return "", errors.New("recipient account address is not an org admin account. cannot accept extension")
 	}
 
 	// check the new key is valid

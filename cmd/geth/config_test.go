@@ -168,7 +168,6 @@ func TestFlagsConfig(t *testing.T) {
 		utils.EVMCallTimeOutFlag,
 		utils.QuorumImmutabilityThreshold,
 		utils.EmitCheckpointsFlag,
-		utils.EnableNodePermissionFlag,
 		utils.AllowedFutureBlockTimeFlag,
 		utils.PluginSettingsFlag,
 		utils.PluginLocalVerifyFlag,
@@ -357,7 +356,6 @@ func TestFlagsConfig(t *testing.T) {
 	assert.Equal(t, []string{"net", "web3", "eth"}, node.WSModules)
 	assert.Equal(t, []string(nil), node.GraphQLCors)
 	assert.Equal(t, []string{"localhost"}, node.GraphQLVirtualHosts)
-	assert.Equal(t, false, node.EnableNodePermission)
 
 	// [Node.P2P]
 	p2p := cfg.Node.P2P
@@ -472,7 +470,6 @@ EWASMInterpreter = ""
 EVMInterpreter = ""
 RPCGasCap = 25000000
 RPCTxFeeCap = 1e+00
-EnableNodePermission = true
 EVMCallTimeOut = 3600000000000
 
 [Eth.Miner]
@@ -526,7 +523,6 @@ WSOrigins = ["'*'"]
 WSModules = ["admin", "db", "eth", "debug", "miner", "net", "txpool", "personal", "web3", "quorum", "istanbul"]
 GraphQLCors = ["'*'"]
 GraphQLVirtualHosts = ["'*'"]
-EnableNodePermission = true
 
 [Node.P2P]
 MaxPeers = 50
@@ -601,7 +597,6 @@ func testConfig(t *testing.T, cfg *gethConfig) {
 	assert.Equal(t, float64(1), eth.RPCTxFeeCap)
 	// Quorum
 	assert.Equal(t, time.Duration(3600000000000), eth.EVMCallTimeOut)
-	assert.Equal(t, true, eth.EnableNodePermission)
 	// End Quorum
 
 	// [Eth.Miner]
@@ -649,7 +644,6 @@ func testConfig(t *testing.T, cfg *gethConfig) {
 	assert.Equal(t, []string{"admin", "db", "eth", "debug", "miner", "net", "txpool", "personal", "web3", "quorum", "istanbul"}, node.WSModules)
 	assert.Equal(t, []string{"'*'"}, node.GraphQLCors)
 	assert.Equal(t, []string{"'*'"}, node.GraphQLVirtualHosts)
-	assert.Equal(t, true, node.EnableNodePermission)
 
 	// [Node.P2P]
 	p2p := cfg.Node.P2P

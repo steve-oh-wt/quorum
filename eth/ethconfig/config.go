@@ -208,9 +208,6 @@ type Config struct {
 	// Berlin block override (TODO: remove after the fork)
 	OverrideBerlin *big.Int `toml:",omitempty"`
 
-	// Quorum
-	EnableNodePermission bool
-
 	// Istanbul options
 	Istanbul istanbul.Config
 

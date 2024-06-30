@@ -30,7 +30,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/ethereum/go-ethereum/permission/core"
 	"github.com/ethereum/go-ethereum/private"
 )
 
@@ -103,13 +102,6 @@ func (p *StateProcessor) Process(block *types.Block, statedb *state.StateDB, pri
 		statedb.Prepare(tx.Hash(), block.Hash(), i)
 
 		privateStateDBToUse := PrivateStateDBForTxn(p.config.IsQuorum, tx, statedb, privateStateDB)
-
-		// Quorum - check for account permissions to execute the transaction
-		if core.IsV2Permission() {
-			if err := core.CheckAccountPermission(tx.From(), tx.To(), tx.Value(), tx.Data(), tx.Gas(), tx.GasPrice()); err != nil {
-				return nil, nil, nil, 0, fmt.Errorf("could not apply tx %d [%v]: %w", i, tx.Hash().Hex(), err)
-			}
-		}
 
 		if p.config.IsQuorum && !p.config.IsGasPriceEnabled(header.Number) && tx.GasPrice() != nil && tx.GasPrice().Cmp(common.Big0) > 0 {
 			return nil, nil, nil, 0, fmt.Errorf("could not apply tx %d [%v]: %w", i, tx.Hash().Hex(), ErrInvalidGasPrice)
@@ -402,13 +394,6 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 	// Quorum - decide the privateStateDB to use
 	privateStateDbToUse := PrivateStateDBForTxn(config.IsQuorum, tx, statedb, privateStateDB)
 	// End Quorum
-
-	// Quorum - check for account permissions to execute the transaction
-	if core.IsV2Permission() {
-		if err := core.CheckAccountPermission(tx.From(), tx.To(), tx.Value(), tx.Data(), tx.Gas(), tx.GasPrice()); err != nil {
-			return nil, nil, err
-		}
-	}
 
 	if config.IsQuorum && !config.IsGasPriceEnabled(header.Number) && tx.GasPrice() != nil && tx.GasPrice().Cmp(common.Big0) > 0 {
 		return nil, nil, ErrInvalidGasPrice
