@@ -466,10 +466,6 @@ func TestQuorumControlsAPI_NodeAPIs(t *testing.T) {
 	assert.NoError(t, err)
 	pcore.NodeInfoMap.UpsertNode(arbitraryNetworkAdminOrg, arbitraryNode3, pcore.NodeApproved)
 
-	//	testObject.permCtrl.isRaft = true
-	_, err = testObject.AddNode(arbitraryNetworkAdminOrg, arbitraryNode4withHostName, txa)
-	assert.Equal(t, err, ptype.ErrHostNameNotSupported)
-
 	_, err = testObject.AddNode(arbitraryNetworkAdminOrg, arbitraryNode4, txa)
 	assert.NoError(t, err)
 	pcore.NodeInfoMap.UpsertNode(arbitraryNetworkAdminOrg, arbitraryNode4, pcore.NodeApproved)
@@ -721,7 +717,7 @@ func typicalPermissionCtrl(t *testing.T, v2Flag bool) *PermissionCtrl {
 	testObject.eth = ethereum
 
 	// set contract and backend's contract as asyncStart won't get called
-	testObject.contract = NewPermissionContractService(testObject.ethClnt, testObject.IsV2Permission(), testObject.key, testObject.permConfig, false, false, ethereum.BlockChain().Config().ChainID)
+	testObject.contract = NewPermissionContractService(testObject.ethClnt, testObject.IsV2Permission(), testObject.key, testObject.permConfig, false, ethereum.BlockChain().Config().ChainID)
 	if v2Flag {
 		b := testObject.backend.(*v2.Backend)
 		b.Contr = testObject.contract.(*v2.Init)
@@ -767,7 +763,7 @@ func TestPermissionCtrl_whenUpdateFile(t *testing.T) {
 	defer os.RemoveAll(d)
 
 	testObject.dataDir = d
-	ptype.UpdatePermissionedNodes(testObject.node, d, arbitraryNode1, ptype.NodeAdd, true)
+	ptype.UpdatePermissionedNodes(testObject.node, d, arbitraryNode1, ptype.NodeAdd)
 
 	permFile, _ := os.Create(d + "/" + "permissioned-nodes.json")
 
@@ -786,8 +782,8 @@ func TestPermissionCtrl_whenUpdateFile(t *testing.T) {
 		return
 	}
 	assert.Equal(t, len(nodeList), 1)
-	ptype.UpdatePermissionedNodes(testObject.node, d, arbitraryNode1, ptype.NodeAdd, true)
-	ptype.UpdatePermissionedNodes(testObject.node, d, arbitraryNode1, ptype.NodeDelete, true)
+	ptype.UpdatePermissionedNodes(testObject.node, d, arbitraryNode1, ptype.NodeAdd)
+	ptype.UpdatePermissionedNodes(testObject.node, d, arbitraryNode1, ptype.NodeDelete)
 
 	blob, _ = ioutil.ReadFile(permFile.Name())
 	if err := json.Unmarshal(blob, &nodeList); err != nil {

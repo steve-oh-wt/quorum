@@ -42,7 +42,6 @@ var (
 		EWASMBlock:               params.QuorumTestChainConfig.EWASMBlock,
 		Ethash:                   params.QuorumTestChainConfig.Ethash,
 		Clique:                   params.QuorumTestChainConfig.Clique,
-		Istanbul:                 params.QuorumTestChainConfig.Istanbul,
 		IsQuorum:                 params.QuorumTestChainConfig.IsQuorum,
 		TransactionSizeLimit:     params.QuorumTestChainConfig.TransactionSizeLimit,
 		MaxCodeSize:              params.QuorumTestChainConfig.MaxCodeSize,

@@ -21,8 +21,6 @@ import (
 	"math/big"
 	"reflect"
 	"testing"
-
-	"github.com/ethereum/go-ethereum/common"
 )
 
 // Quorum - test code size and transaction size limit in chain config
@@ -94,19 +92,6 @@ func TestCheckTransitionsData(t *testing.T) {
 		stored  *ChainConfig
 		wantErr error
 	}
-	var ibftTransitionsConfig, qbftTransitionsConfig, invalidTransition, invalidBlockOrder []Transition
-	var emptyBlockPeriodSeconds uint64 = 10
-
-	tranI0 := Transition{big.NewInt(0), IBFT, 30000, 5, nil, 10, 50, common.Address{}, nil, "", nil, nil, nil, nil, 0, nil, 0, nil, nil, nil, nil}
-	tranQ5 := Transition{big.NewInt(5), QBFT, 30000, 5, &emptyBlockPeriodSeconds, 10, 50, common.Address{}, nil, "", nil, nil, nil, nil, 0, nil, 0, nil, nil, nil, nil}
-	tranI10 := Transition{big.NewInt(10), IBFT, 30000, 5, nil, 10, 50, common.Address{}, nil, "", nil, nil, nil, nil, 0, nil, 0, nil, nil, nil, nil}
-	tranQ8 := Transition{big.NewInt(8), QBFT, 30000, 5, &emptyBlockPeriodSeconds, 10, 50, common.Address{}, nil, "", nil, nil, nil, nil, 0, nil, 0, nil, nil, nil, nil}
-
-	ibftTransitionsConfig = append(ibftTransitionsConfig, tranI0, tranI10)
-	qbftTransitionsConfig = append(qbftTransitionsConfig, tranQ5, tranQ8)
-
-	invalidTransition = append(invalidTransition, tranI0, tranQ5, tranI10)
-	invalidBlockOrder = append(invalidBlockOrder, tranQ8, tranQ5)
 
 	tests := []test{
 		{stored: MainnetChainConfig, wantErr: nil},
@@ -122,30 +107,6 @@ func TestCheckTransitionsData(t *testing.T) {
 		{
 			stored:  &ChainConfig{QBFT: &QBFTConfig{}},
 			wantErr: nil,
-		},
-		{
-			stored:  &ChainConfig{QBFT: &QBFTConfig{}, Transitions: qbftTransitionsConfig},
-			wantErr: nil,
-		},
-		{
-			stored:  &ChainConfig{Transitions: ibftTransitionsConfig},
-			wantErr: nil,
-		},
-		{
-			stored:  &ChainConfig{Transitions: qbftTransitionsConfig},
-			wantErr: nil,
-		},
-		{
-			stored:  &ChainConfig{QBFT: &QBFTConfig{}, Transitions: ibftTransitionsConfig},
-			wantErr: ErrTransition,
-		},
-		{
-			stored:  &ChainConfig{Transitions: invalidBlockOrder},
-			wantErr: ErrBlockOrder,
-		},
-		{
-			stored:  &ChainConfig{Transitions: []Transition{{nil, IBFT, 30000, 5, &emptyBlockPeriodSeconds, 10, 50, common.Address{}, nil, "", nil, nil, nil, nil, 0, nil, 0, nil, nil, nil, nil}}},
-			wantErr: ErrBlockNumberMissing,
 		},
 		{
 			stored:  &ChainConfig{Transitions: []Transition{{Block: big.NewInt(0), Algorithm: "AA"}}},

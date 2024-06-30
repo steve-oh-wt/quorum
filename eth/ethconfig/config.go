@@ -210,6 +210,7 @@ type Config struct {
 
 	// Quorum
 	EnableNodePermission bool
+
 	// Istanbul options
 	Istanbul istanbul.Config
 

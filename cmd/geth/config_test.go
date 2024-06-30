@@ -168,7 +168,6 @@ func TestFlagsConfig(t *testing.T) {
 		utils.EVMCallTimeOutFlag,
 		utils.QuorumImmutabilityThreshold,
 		utils.EmitCheckpointsFlag,
-		utils.RaftDNSEnabledFlag,
 		utils.EnableNodePermissionFlag,
 		utils.AllowedFutureBlockTimeFlag,
 		utils.PluginSettingsFlag,
@@ -473,7 +472,6 @@ EWASMInterpreter = ""
 EVMInterpreter = ""
 RPCGasCap = 25000000
 RPCTxFeeCap = 1e+00
-RaftMode = true
 EnableNodePermission = true
 EVMCallTimeOut = 3600000000000
 
